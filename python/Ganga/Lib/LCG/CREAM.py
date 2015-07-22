@@ -4,6 +4,7 @@ import os.path
 import math
 import re
 import mimetypes
+from collections import defaultdict
 
 from urlparse import urlparse
 
@@ -26,6 +27,7 @@ from Ganga.Lib.LCG.GridftpSandboxCache import GridftpSandboxCache
 from Ganga.GPIDev.Base.Proxy import getName
 
 config = getConfig('LCG')
+from Ganga.GPIDev.Credentials2 import VomsProxy
 
 def __cream_resolveOSBList__(job, jdl):
 
@@ -67,7 +69,8 @@ class CREAM(IBackend):
         'workernode': SimpleItem(defvalue='', protected=1, copyable=0, doc='The worker node on which the job actually runs.'),
         'isbURI': SimpleItem(defvalue='', protected=1, copyable=0, doc='The input sandbox URI on CREAM CE'),
         'osbURI': SimpleItem(defvalue='', protected=1, copyable=0, doc='The output sandbox URI on CREAM CE'),
-        'delegation_id': SimpleItem(defvalue='', typelist=['str'], hidden=True),
+        'credential_requirements': ComponentItem('CredentialRequirement', defvalue=VomsProxy()),
+        'delegation_id': SimpleItem(defvalue='', typelist=[str], hidden=True),
     })
 
     _category = 'backends'
@@ -321,9 +324,10 @@ class CREAM(IBackend):
         # the algorithm for submitting a single bulk job
         class MyAlgorithm(Algorithm):
 
-            def __init__(self, masterInputWorkspace, ce, delid):
+            def __init__(self, cred_req, masterInputWorkspace, ce, delid):
                 Algorithm.__init__(self)
                 self.inpw = masterInputWorkspace
+                self.cred_req = cred_req
                 self.ce = ce
                 self.delid = delid
 
@@ -331,7 +335,7 @@ class CREAM(IBackend):
                 my_sj_id = jdl_info[0]
                 my_sj_jdl = jdl_info[1]
 
-                my_sj_jid = Grid.cream_submit(my_sj_jdl, self.ce, self.delid)
+                my_sj_jid = Grid.cream_submit(my_sj_jdl, self.ce, self.delid, self.cred_req)
 
                 if not my_sj_jid:
                     return False
@@ -343,7 +347,10 @@ class CREAM(IBackend):
         for id, jdl in node_jdls.items():
             mt_data.append((id, jdl))
 
-        myAlg = MyAlgorithm(masterInputWorkspace=job.getInputWorkspace(), ce=self.CE, delid=self.delegation_id)
+        myAlg = MyAlgorithm(cred_req=self.credential_requirements,
+                            masterInputWorkspace=job.getInputWorkspace(),
+                            ce=self.CE,
+                            delid=self.delegation_id)
         myData = Data(collection=mt_data)
 
         runner = MTRunner(name='cream_jsubmit', algorithm=myAlg,
@@ -926,7 +933,7 @@ sys.exit(0)
             logger.warning('Job %s is not running.' % job.getFQID('.'))
             return False
 
-        return Grid.cream_cancelMultiple([self.id])
+        return Grid.cream_cancelMultiple([self.id], self.credential_requirements)
 
     def master_kill(self):
         '''kill the master job to the grid'''
@@ -955,7 +962,7 @@ sys.exit(0)
                 ids.append(sj.backend.id)
 
         # 2. cancel the collected jobs
-        ck = Grid.cream_cancelMultiple(ids)
+        ck = Grid.cream_cancelMultiple(ids, self.credential_requirements)
         if not ck:
             logger.warning('Job cancellation failed')
             return False
@@ -1079,7 +1086,7 @@ sys.exit(0)
             raise GangaException('CREAM CE endpoint not set')
 
         # delegate proxy to CREAM CE
-        self.delegation_id = Grid.cream_proxy_delegation(self.CE, self.delegation_id)
+        self.delegation_id = Grid.cream_proxy_delegation(self.CE, self.delegation_id, self.credential_requirements)
         if not self.delegation_id:
             logger.warning('proxy delegation to %s failed' % self.CE)
 
@@ -1103,7 +1110,7 @@ sys.exit(0)
         jdlpath = self.preparejob(subjobconfig, master_job_sandbox)
 
         if jdlpath:
-            self.id = Grid.cream_submit(jdlpath, self.CE, self.delegation_id)
+            self.id = Grid.cream_submit(jdlpath, self.CE, self.delegation_id, self.credential_requirements)
 
             if self.id:
                 self.actualCE = self.CE
@@ -1139,7 +1146,7 @@ sys.exit(0)
         ick = False
 
         # delegate proxy to CREAM CE
-        self.delegation_id = Grid.cream_proxy_delegation(self.CE, self.delegation_id)
+        self.delegation_id = Grid.cream_proxy_delegation(self.CE, self.delegation_id, self.credential_requirements)
         if not self.delegation_id:
             logger.warning('proxy delegation to %s failed' % self.CE)
 
@@ -1176,7 +1183,7 @@ sys.exit(0)
         jdlpath = job.getInputWorkspace().getPath("__jdlfile__")
 
         if jdlpath:
-            self.id = Grid.cream_submit(jdlpath, self.CE, self.delegation_id)
+            self.id = Grid.cream_submit(jdlpath, self.CE, self.delegation_id, self.credential_requirements)
 
             if self.id:
                 # refresh the lcg job information
@@ -1190,10 +1197,19 @@ sys.exit(0)
     def updateMonitoringInformation(jobs):
         '''Monitoring loop for normal jobs'''
 
-        jobdict = dict([[job.backend.id, job]
-                        for job in jobs if job.backend.id])
+        jobdict = dict([(job.backend.id, job) for job in jobs if job.backend.id])
 
-        jobInfoDict = Grid.cream_status(jobdict.keys())
+        # Group jobs by the backend's credential requirements
+        cred_to_backend_id_list = defaultdict(list)
+        for job in jobs:
+            cred_to_backend_id_list[job.backend.credential_requirements].append(job.backend.id)
+
+        # Batch the status requests by credential requirement
+        jobInfoDict = {}
+        for cred_req, job_ids in cred_to_backend_id_list.items():
+            # Create a ``Grid`` for each credential requirement and request the relevant jobs through it
+            info = Grid.cream_status(job_ids, cred_req)
+            jobInfoDict.update(info)
 
         jidListForPurge = []
 
@@ -1235,9 +1251,9 @@ sys.exit(0)
 
                         if osbURIList:
 
-                            if Grid.cream_get_output(osbURIList, job.getOutputWorkspace(create=True).getPath() ):
+                            if Grid.cream_get_output(osbURIList, job.getOutputWorkspace(create=True).getPath()):
                                 (ick, app_exitcode) = Grid.__get_app_exitcode__(
-                                    job.getOutputWorkspace(create=True).getPath() )
+                                    job.getOutputWorkspace(create=True).getPath())
                                 job.backend.exitcode = app_exitcode
 
                                 jidListForPurge.append(job.backend.id)
@@ -1266,9 +1282,9 @@ sys.exit(0)
                 logger.warning(
                     'fail to retrieve job informaton: %s' % jobdict[id].getFQID('.'))
 
-            # purging the jobs the output has been fetched locally
-            if jidListForPurge:
-                Grid.cream_purgeMultiple(jidListForPurge)
+        # purging the jobs the output has been fetched locally
+        for cred_req, job_ids in cred_to_backend_id_list.items():
+            Grid.cream_purgeMultiple(job_ids, cred_req)
 
     def updateGangaJobStatus(self):
         '''map backend job status to Ganga job status'''

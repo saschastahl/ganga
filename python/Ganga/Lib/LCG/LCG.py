@@ -15,6 +15,7 @@ import os
 import re
 import math
 import mimetypes
+from collections import defaultdict
 
 from Ganga.Core.GangaThread.MTRunner import MTRunner, Data, Algorithm
 from Ganga.Core import GangaException
@@ -32,6 +33,8 @@ from Ganga.Lib.LCG.Utility import get_uuid, get_md5sum
 from Ganga.Utility.logic import implies
 from Ganga.GPIDev.Base.Proxy import isType, getName
 from Ganga.Utility.GridShell import getShell
+
+from Ganga.GPIDev.Credentials2 import VomsProxy
 
 from . import Grid
 
@@ -57,7 +60,7 @@ def get_lcg_output_downloader():
 
 
 def __fail_missing_jobs__(missing_glite_jids, jobdict):
-    '''failing the Ganga jobs if the associated glite job id is appearing in missing_glite_jids'''
+    """failing the Ganga jobs if the associated glite job id is appearing in missing_glite_jids"""
 
     for glite_jid in missing_glite_jids:
         if glite_jid in jobdict:
@@ -82,7 +85,7 @@ def __fail_missing_jobs__(missing_glite_jids, jobdict):
 
 class LCG(IBackend):
 
-    '''LCG backend - submit jobs to the EGEE/LCG Grid using gLite middleware.
+    """LCG backend - submit jobs to the EGEE/LCG Grid using gLite middleware.
 
     If the input sandbox exceeds the limit specified in the ganga
     configuration, it is automatically uploaded to a storage element. This
@@ -94,7 +97,7 @@ class LCG(IBackend):
     For more options see help on LCGRequirements.
 
     See also: http://cern.ch/glite/documentation
-    '''
+    """
 
     # internal usage of the flag:
     #  - 0: job without the need of special control
@@ -114,7 +117,8 @@ class LCG(IBackend):
         'perusable': SimpleItem(defvalue=False, protected=0, copyable=1, doc='Enable the job perusal feature of GLITE'),
         'actualCE': SimpleItem(defvalue='', protected=1, copyable=0, doc='Computing Element where the job actually runs.'),
         'monInfo': SimpleItem(defvalue={}, protected=1, copyable=0, hidden=1, doc='Hidden information of the monitoring service.'),
-        'flag': SimpleItem(defvalue=0, protected=1, copyable=0, hidden=1, doc='Hidden flag for internal control.')
+        'flag': SimpleItem(defvalue=0, protected=1, copyable=0, hidden=1, doc='Hidden flag for internal control.'),
+        'credential_requirements': ComponentItem('CredentialRequirement', defvalue=VomsProxy(), typelist=['Ganga.GPIDev.Credentials2.ICredentialRequirement.ICredentialRequirement', 'None']),
     })
 
     _category = 'backends'
@@ -153,12 +157,8 @@ class LCG(IBackend):
         except:
             logger.debug('load default LCGSandboxCAche')
 
-    def __checkset_middleware__(self, value):
-        if value and not value.upper() in ['GLITE']:
-            raise AttributeError('middleware value must be "GLITE"')
-
     def __setup_sandboxcache__(self, job):
-        '''Sets up the sandbox cache object to adopt the runtime configuration of the LCG backend'''
+        """Sets up the sandbox cache object to adopt the runtime configuration of the LCG backend"""
 
         re_token = re.compile('^token:(.*):(.*)$')
 
@@ -208,7 +208,7 @@ class LCG(IBackend):
         return True
 
     def __check_and_prestage_inputfile__(self, file):
-        '''Checks the given input file size and if it's size is
+        """Checks the given input file size and if it's size is
            over "BoundSandboxLimit", prestage it to a grid SE.
 
            The argument is a path of the local file.
@@ -225,7 +225,7 @@ class LCG(IBackend):
            If the file has been previously uploaded (according to md5sum),
            the prestaging is ignored and index to the previously uploaded file
            is returned.
-           '''
+           """
 
         idx = {'lfc_host': '', 'local': [], 'remote': {}}
 
@@ -343,11 +343,9 @@ class LCG(IBackend):
             raise GangaException('Operations of GLITE middleware not enabled')
         else:
             if len(job.subjobs) == 0:
-                ick = IBackend.master_submit(
-                    self, rjobs, subjobconfigs, masterjobconfig)
+                ick = IBackend.master_submit(self, rjobs, subjobconfigs, masterjobconfig)
             else:
-                ick = self.master_bulk_submit(
-                    rjobs, subjobconfigs, masterjobconfig)
+                ick = self.master_bulk_submit(rjobs, subjobconfigs, masterjobconfig)
                 if not ick:
                     raise GangaException('GLITE bulk submission failure')
 
@@ -427,22 +425,20 @@ class LCG(IBackend):
         # the algorithm for submitting a single bulk job
         class MyAlgorithm(Algorithm):
 
-            def __init__(self, masterInputWorkspace):
+            def __init__(self, cred_req, masterInputWorkspace):
                 Algorithm.__init__(self)
+                self.cred_req = cred_req
                 self.inpw = masterInputWorkspace
 
             def process(self, node_info):
                 my_node_offset = node_info['offset']
                 my_node_jdls = node_info['jdls']
-                coll_jdl_name = '__jdlfile__%d_%d__' % (
-                    my_node_offset, my_node_offset + len(my_node_jdls))
+                coll_jdl_name = '__jdlfile__%d_%d__' % (my_node_offset, my_node_offset + len(my_node_jdls))
                 # compose master JDL for collection job
-                jdl_cnt = self.__make_collection_jdl__(
-                    my_node_jdls, offset=my_node_offset)
-                jdl_path = self.inpw.writefile(
-                    FileBuffer(coll_jdl_name, jdl_cnt))
+                jdl_cnt = self.__make_collection_jdl__(my_node_jdls, offset=my_node_offset)
+                jdl_path = self.inpw.writefile(FileBuffer(coll_jdl_name, jdl_cnt))
 
-                master_jid = Grid.submit(jdl_path, ce=None)
+                master_jid = Grid.submit(jdl_path, self.cred_req, ce=None)
                 if not master_jid:
                     return False
                 else:
@@ -492,7 +488,7 @@ class LCG(IBackend):
             data['jdls'] = node_jdls[ibeg:iend]
             mt_data.append(data)
 
-        myAlg = MyAlgorithm(masterInputWorkspace=job.getInputWorkspace())
+        myAlg = MyAlgorithm(self.credential_requirements, masterInputWorkspace=job.getInputWorkspace())
         myData = Data(collection=mt_data)
 
         runner = MTRunner(name='lcg_jsubmit', algorithm=myAlg,
@@ -504,7 +500,7 @@ class LCG(IBackend):
             # not all bulk jobs are successfully submitted. canceling the
             # submitted jobs on WMS immediately
             logger.error('some bulk jobs not successfully (re)submitted, canceling submitted jobs on WMS')
-            Grid.cancelMultiple(runner.getResults().values())
+            Grid.cancelMultiple(runner.getResults().values(), self.credential_requirements)
             return None
         else:
             return runner.getResults()
@@ -580,8 +576,6 @@ class LCG(IBackend):
     def master_bulk_submit(self, rjobs, subjobconfigs, masterjobconfig):
         '''GLITE bulk submission'''
 
-        from Ganga.Utility.logging import log_user_exception
-
         profiler = ElapsedTimeProfiler(getLogger(name='Profile.LCG'))
         profiler.start()
 
@@ -598,7 +592,7 @@ class LCG(IBackend):
         profiler.checkAndStart('job preparation elapsed time')
 
         if config['MatchBeforeSubmit']:
-            matches = Grid.list_match(node_jdls[-1], ce=self.CE)
+            matches = Grid.list_match(node_jdls[-1], self.credential_requirements, ce=self.CE)
             if not matches:
                 self.__print_no_resource_error__(node_jdls[-1])
                 return False
@@ -652,7 +646,7 @@ class LCG(IBackend):
             node_jdls.append(jdlpath)
 
         if config['MatchBeforeSubmit']:
-            matches = Grid.list_match(node_jdls[-1], ce=self.CE)
+            matches = Grid.list_match(node_jdls[-1], self.credential_requirements, ce=self.CE)
             if not matches:
                 self.__print_no_resource_error__(node_jdls[-1])
                 return False
@@ -710,7 +704,7 @@ class LCG(IBackend):
                 ids.append(sj.backend.id)
 
         # 2. cancel the collected jobs
-        ck = Grid.cancelMultiple(ids)
+        ck = Grid.cancelMultiple(ids, self.credential_requirements)
         if not ck:
             logger.warning('Job cancellation failed')
             return False
@@ -737,7 +731,7 @@ class LCG(IBackend):
                 except KeyError:
                     pass
 
-        ck = Grid.native_master_cancel(myids)
+        ck = Grid.native_master_cancel(myids, self.credential_requirements)
 
         if not ck:
             logger.warning('Job cancellation failed: %s' % self.id)
@@ -770,8 +764,7 @@ class LCG(IBackend):
 
         # successful logging info fetching returns a file path to the
         # information
-        loginfo_output = Grid.get_loginfo(
-            my_ids, job.outputdir, verbosity)
+        loginfo_output = Grid.get_loginfo(my_ids, job.outputdir, self.credential_requirements, verbosity)
 
         if loginfo_output:
 
@@ -880,7 +873,7 @@ class LCG(IBackend):
 
             logger.debug('JDL used for match-making: %s' % jdlpath)
 
-            matches = Grid.list_match(jdlpath, ce=self.CE)
+            matches = Grid.list_match(jdlpath, self.credential_requirements, ce=self.CE)
 
         except Exception as x:
             logger.warning('job match failed: %s', str(x))
@@ -905,12 +898,12 @@ class LCG(IBackend):
         jdlpath = self.preparejob(subjobconfig, master_job_sandbox)
 
         if config['MatchBeforeSubmit']:
-            matches = Grid.list_match(jdlpath, ce=self.CE)
+            matches = Grid.list_match(jdlpath, self.credential_requirements, ce=self.CE)
             if not matches:
                 self.__print_no_resource_error__(jdlpath)
                 return None
 
-        self.id = Grid.submit(jdlpath, ce=self.CE, perusable=self.perusable)
+        self.id = Grid.submit(jdlpath, self.credential_requirements, ce=self.CE, perusable=self.perusable)
 
         self.parent_id = self.id
 
@@ -926,12 +919,12 @@ class LCG(IBackend):
         self.updateExcudedCEsInJdl(jdlpath)
 
         if config['MatchBeforeSubmit']:
-            matches = Grid.list_match(jdlpath, ce=self.CE)
+            matches = Grid.list_match(jdlpath, self.credential_requirements, ce=self.CE)
             if not matches:
                 self.__print_no_resource_error__(jdlpath)
                 return None
 
-        self.id = Grid.submit(jdlpath, ce=self.CE, perusable=self.perusable)
+        self.id = Grid.submit(jdlpath, self.credential_requirements, ce=self.CE, perusable=self.perusable)
         self.parent_id = self.id
 
         if self.id:
@@ -955,7 +948,7 @@ class LCG(IBackend):
             logger.warning('Job %s is not running.' % job.getFQID('.'))
             return False
 
-        return Grid.cancel(self.id)
+        return Grid.cancel(self.id, self.credential_requirements)
 
     def __jobWrapperTemplate__(self):
         '''Create job wrapper'''
@@ -1346,7 +1339,8 @@ sys.exit(0)
         if self.status == "Running" and self.perusable:
             fname = os.path.join(job.outputdir, '_peek.dat')
 
-            re, output, m = getShell().cmd("glite-wms-job-perusal --get --all -f stdout %s" % self.id, fname)
+            sh = getShell(self.credential_requirements)
+            re, output, m = sh.cmd("glite-wms-job-perusal --get --all -f stdout %s" % self.id, fname)
             job.viewFile(fname, cmd)
 
         return None
@@ -1564,7 +1558,6 @@ sys.exit(0)
 #        if jobconfig.args: jdl['Arguments'] = jobconfig.getArguments()
 
 #       additional settings from the configuration
-        # !!note!! StorageIndex is not defined in EDG middleware
         for name in ['ShallowRetryCount', 'RetryCount']:
             if config[name] >= 0:
                 jdl[name] = config[name]
@@ -1574,12 +1567,13 @@ sys.exit(0)
                 jdl[name] = config[name]
 
         jdlText = Grid.expandjdl(jdl)
+        print(jdlText)
         logger.debug('subjob JDL: %s' % jdlText)
         return inpw.writefile(FileBuffer('__jdlfile__', jdlText))
 
     @staticmethod
     def updateGangaJobStatus(job, status):
-        '''map backend job status to Ganga job status'''
+        """map backend job status to Ganga job status"""
 
         if status == 'Running':
             job.updateStatus('running')
@@ -1595,8 +1589,7 @@ sys.exit(0)
                 # do nothing in this case as it's in the middle of the
                 # corresponding job downloading task
                 return
-            logger.warning(
-                'The job %d has reached unexpected the Cleared state and Ganga cannot retrieve the output.', job.getFQID('.'))
+            logger.warning('The job %d has reached unexpected the Cleared state and Ganga cannot retrieve the output.', job.getFQID('.'))
             job.updateStatus('failed')
 
         elif status in ['Submitted', 'Waiting', 'Scheduled', 'Ready', 'Done (Failed)', 'Done(Failed)']:
@@ -1607,7 +1600,7 @@ sys.exit(0)
 
     @staticmethod
     def master_updateMonitoringInformation(jobs):
-        '''Main Monitoring loop'''
+        """Main Monitoring loop"""
 
         profiler = ElapsedTimeProfiler(getLogger(name='Profile.LCG'))
         profiler.start()
@@ -1625,48 +1618,49 @@ sys.exit(0)
                 # those jobs should be checked individually as a single job
                 for sj in j.subjobs:
                     if sj.backend.flag == 1 and sj.status in ['submitted', 'running']:
-                        logger.debug(
-                            'job %s submitted individually. separate it in a different monitoring loop.' % sj.getFQID('.'))
+                        logger.debug('job %s submitted individually. separate it in a different monitoring loop.' % sj.getFQID('.'))
                         emulated_bulk_jobs.append(sj)
 
         # involk normal monitoring method for normal jobs
         for j in emulated_bulk_jobs:
-            logger.debug('emulated bulk job to be monitored: %s' %
-                         j.getFQID('.'))
+            logger.debug('emulated bulk job to be monitored: %s' % j.getFQID('.'))
         IBackend.master_updateMonitoringInformation(emulated_bulk_jobs)
 
         # involk special monitoring method for glite bulk jobs
         for j in native_bulk_jobs:
-            logger.debug('native bulk job to be monitored: %s' %
-                         j.getFQID('.'))
+            logger.debug('native bulk job to be monitored: %s' % j.getFQID('.'))
         LCG.master_bulk_updateMonitoringInformation(native_bulk_jobs)
 
         # should went through all jobs to update overall master job status
         for j in jobs:
             if (len(j.subjobs) > 0) and j.backend.id:
-                logger.debug(
-                    'updating overall master job status: %s' % j.getFQID('.'))
+                logger.debug('updating overall master job status: %s' % j.getFQID('.'))
                 j.updateMasterJobStatus()
 
         profiler.check('==> master_updateMonitoringInformation() elapsed time')
 
     @staticmethod
     def updateMonitoringInformation(jobs):
-        '''Monitoring loop for normal jobs'''
+        """Monitoring loop for normal jobs"""
 
-        jobdict = dict((job.backend.id, job) for job in jobs if job.backend.id)
+        jobdict = dict([(job.backend.id, job) for job in jobs if job.backend.id])
 
-        # loop over the job classes
-        cnt_new_download_task = 0
+        # Group jobs by the backend's credential requirements
+        cred_to_backend_id_list = defaultdict(list)
+        for job in jobs:
+            cred_to_backend_id_list[job.backend.credential_requirements].append(job.backend.id)
 
-        if not config['GLITE_ENABLE']:
-            return
-
-        # loop over the jobs in each class
-        status_info, missing_glite_jids = Grid.status(jobdict.keys())
+        # Batch the status requests by credential requirement
+        status_info = []
+        missing_glite_jids = []
+        for cred_req, job_ids in cred_to_backend_id_list.items():
+            status, missing = Grid.status(job_ids, cred_req)
+            status_info += status
+            missing_glite_jids += missing
 
         __fail_missing_jobs__(missing_glite_jids, jobdict)
 
+        cnt_new_download_task = 0
         for info in status_info:
 
             create_download_task = False
@@ -1674,13 +1668,11 @@ sys.exit(0)
             job = jobdict[info['id']]
 
             if job.backend.actualCE != info['destination']:
-                logger.info(
-                    'job %s has been assigned to %s', job.getFQID('.'), info['destination'])
+                logger.info('job %s has been assigned to %s', job.getFQID('.'), info['destination'])
                 job.backend.actualCE = info['destination']
 
             if job.backend.status != info['status']:
-                logger.info(
-                    'job %s has changed status to %s', job.getFQID('.'), info['status'])
+                logger.info('job %s has changed status to %s', job.getFQID('.'), info['status'])
                 job.backend.status = info['status']
                 job.backend.reason = info['reason']
                 job.backend.exitcode_lcg = info['exit']
@@ -1706,12 +1698,11 @@ sys.exit(0)
             logger.debug('%d new downloading tasks; %d alive downloading agents' % (
                 cnt_new_download_task, downloader.countAliveAgent()))
 
-#    def master_bulk_updateMonitoringInformation(jobs,updateMasterStatus=True):
     @staticmethod
     def master_bulk_updateMonitoringInformation(jobs):
         '''Monitoring loop for glite bulk jobs'''
 
-        # split up the master job into severl LCG bulk job ids
+        # split up the master job into several LCG bulk job ids
         # - checking subjob status and excluding the master jobs with all subjobs in a final state)
         # - excluding the resubmitted jobs
         # - checking master jobs with the status not being properly updated while all subjobs are in final states
@@ -1743,16 +1734,19 @@ sys.exit(0)
         job = None
         subjobdict = {}
 
-        # make sure all the status information is available
-        # if not ... wait for a while and fetch the status again
-        def check_info(status):
-            for info in status:
-                if info['is_node'] and not info['name']:
-                    return False
-            return True
+        # Group jobs by the backend's credential requirements
+        cred_to_job_list = defaultdict(list)
+        for job in jobs:
+            cred_to_job_list[job.backend.credential_requirements].append(job)
 
-        (status_info, missing_glite_jids) = Grid.status(
-            jobdict.keys(), is_collection=True)
+        # Batch the status requests by credential requirement
+        status_info = []
+        missing_glite_jids = []
+        for cred_req, job_list in cred_to_job_list.items():
+            # Create a ``Grid`` for each credential requirement and request the relevant jobs through it
+            status, missing = Grid.status(job_list, cred_req, is_collection=True)
+            status_info += status
+            missing_glite_jids += missing
 
         __fail_missing_jobs__(missing_glite_jids, jobdict)
 
@@ -1888,7 +1882,7 @@ sys.exit(0)
             jdl_file2 = tempfile.mktemp('.jdl')
             file(jdl_file2, 'w').write(jdl_file_txt)
 
-        matches = Grid.list_match(jdl_file2, ce=spec_ce)
+        matches = Grid.list_match(jdl_file2, self.credential_requirements, ce=spec_ce)
 
         # clean up
         if not jdl_file:
@@ -2468,7 +2462,7 @@ logger.debug('LCG module initialization: end')
 # bug fix
 #
 # Revision 1.84  2007/06/06 15:21:52  hclee
-# fix the issue that if the grids['EDG'] and grids['GLITE'] not properly created on the machine without UI installation
+# fix the issue that if the grids['EDG'] and Grid not properly created on the machine without UI installation
 #
 # Revision 1.83  2007/06/05 16:43:06  hclee
 # get default lfc_host from lcg-infosites utility
