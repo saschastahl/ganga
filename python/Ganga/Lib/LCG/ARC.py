@@ -316,7 +316,7 @@ class ARC(IBackend):
             # submitted jobs on WMS immediately
             logger.error(
                 'some bulk jobs not successfully (re)submitted, canceling submitted jobs on WMS')
-            Grid.arc_cancelMultiple(runner.getResults().values(), self.credential_requirements)
+            Grid.arc_cancel_multiple(runner.getResults().values(), self.credential_requirements)
             return None
         else:
             return runner.getResults()
@@ -919,7 +919,7 @@ sys.exit(0)
                 ids.append(sj.backend.id)
 
         # 2. cancel the collected jobs
-        ck = Grid.arc_cancelMultiple(ids, self.credential_requirements)
+        ck = Grid.arc_cancel_multiple(ids, self.credential_requirements)
         if not ck:
             logger.warning('Job cancellation failed')
             return False
@@ -1238,7 +1238,7 @@ sys.exit(0)
         # purging the jobs the output has been fetched locally
         if jidListForPurge:
             for cred_req, job_ids in cred_to_backend_id_list.items():
-                if not Grid.arc_purgeMultiple(set(job_ids) & set(jidListForPurge), cred_req):
+                if not Grid.arc_purge_multiple(set(job_ids) & set(jidListForPurge), cred_req):
                     logger.warning("Failed to purge all ARC jobs.")
 
 
