@@ -4,6 +4,8 @@
 # $Id: Job.py,v 1.13 2009-07-14 12:43:41 moscicki Exp $
 ##########################################################################
 
+# TODO: Possibly remove plugin system entirely
+
 from Ganga.GPIDev.Base import GangaObject
 from Ganga.GPIDev.Schema import Version, Schema, FileItem, ComponentItem, SimpleItem, GangaFileItem
 from Ganga.GPIDev.Lib.Job.MetadataDict import MetadataDict

@@ -1,4 +1,4 @@
-import unittest
+import unittest2
 
 from Ganga.GPIDev.Base import GangaObject
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem, FileItem
@@ -22,7 +22,7 @@ import Ganga.GPIDev.Base.Proxy
 import Ganga.Core.exceptions
 
 
-class TestProxy(unittest.TestCase):
+class TestProxy(unittest2.TestCase):
     """
     Test the Proxy functions
     """
@@ -104,7 +104,7 @@ class TestProxy(unittest.TestCase):
         self.assertRaises(AttributeError, _call)
 
 
-class TestVersion(unittest.TestCase):
+class TestVersion(unittest2.TestCase):
     """
     Make sure that the version checks are working
     """
@@ -122,7 +122,7 @@ class TestVersion(unittest.TestCase):
         self.assertFalse(v1.isCompatible(v2))
 
 
-class TestSchema(unittest.TestCase):
+class TestSchema(unittest2.TestCase):
     def test_create(self):
         """
         Create a complex schema and make sure all the items are added
