@@ -99,8 +99,8 @@ class TestNode(TestCase):
 #    def testAccept(self):
 #        self.obj.accept(visitor)
 
-    def testClone(self):
-        temp = self.obj.clone()
+#    def testClone(self):
+#        temp = self.obj.clone()
 
     def testCopyFrom(self):
         temp = Node(None)
@@ -112,8 +112,8 @@ class TestNode(TestCase):
     def tearDown(self):
         pass
 
-class TestObjectMetaclass(TestCase):
+#class TestObjectMetaclass(TestCase):
 
-    def testObjectMetaclass(self):
-        ObjectMetaclass(name='', bases=(), dict={'_schema': None})
+#    def testObjectMetaclass(self):
+#        ObjectMetaclass(name='', bases=(), dict={'_schema': None})
 
