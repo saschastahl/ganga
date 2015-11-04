@@ -1,8 +1,9 @@
 # import unittest2 for python 2.6
 try:
     import unittest2 as unittest
-except:
+except ImportError:
     import unittest
+
 
 class TestJob(unittest.TestCase):
     """
@@ -32,3 +33,15 @@ class TestJob(unittest.TestCase):
         j2 = j.clone()
         self.assertIsInstance(j2, Job)
 
+    def test_set_properties(self):
+        """
+        Create a job and assign some properties
+        """
+        from Ganga.GPIDev.Lib.Job.Job import Job
+
+        j = Job()
+        j.name = "Test"
+
+        self.assertEqual(len(j.inputfiles), 0)
+        self.assertEqual(len(j.outputfiles), 0)
+        self.assertEqual(j.name, "Test")
