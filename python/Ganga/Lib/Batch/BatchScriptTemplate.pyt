@@ -151,5 +151,3 @@ heartbeatfile.close()
 os.unlink(heartbeatfilename)
 
 sys.exit(result)
-
-
