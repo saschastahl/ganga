@@ -110,3 +110,31 @@ class TestJob(unittest.TestCase):
 
         j.updateStatus("submitting")
         self.assertEqual(j.status, "submitting")
+
+    def test_jobinfo(self):
+        """
+        Test the job info object
+        """
+        from Ganga.GPIDev.Lib.Job.Job import JobInfo
+        ji = JobInfo()
+
+        self.assertIsInstance(ji, JobInfo)
+
+    def test_jobinfo_increment(self):
+        """
+        Test the job info object
+        """
+        from Ganga.GPIDev.Lib.Job.Job import JobInfo
+        ji = JobInfo()
+        ji.increment()
+
+        self.assertEqual(ji.submit_counter, 1)
+
+    def test_jobtemplate(self):
+        """
+        Test the job template object
+        """
+        from Ganga.GPIDev.Lib.Job.Job import JobTemplate
+        jt = JobTemplate()
+
+        self.assertIsInstance(jt, JobTemplate)
