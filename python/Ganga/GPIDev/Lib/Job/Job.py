@@ -4,50 +4,29 @@
 # $Id: Job.py,v 1.13 2009-07-14 12:43:41 moscicki Exp $
 ##########################################################################
 
-# TODO: Possibly remove plugin system entirely
+# System imports
+import copy
+import glob
+import os
+import re
+import time
+import uuid
 
+# Required Ganga imports from other modules
 from Ganga.GPIDev.Base import GangaObject
 from Ganga.GPIDev.Schema import Version, Schema, FileItem, ComponentItem, SimpleItem, GangaFileItem
 from Ganga.GPIDev.Lib.Job.MetadataDict import MetadataDict
 from Ganga.Lib.Executable.Executable import Executable
 from Ganga.Lib.Localhost.Localhost import Localhost
-
-import Ganga.Utility.logging
-from Ganga.GPIDev.Adapters.IPostProcessor import PostProcessException, MultiPostProcessor
-
-from Ganga.Utility.logging import log_user_exception
-
+from Ganga.Utility.logging import getLogger
 from Ganga.Utility.Config import getConfig, ConfigError
-
 from Ganga.Core import GangaException
-from Ganga.Core.GangaRepository import RegistryKeyError, getRegistry
+from Ganga.GPIDev.Lib.Job.JobTime import JobTime
+from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
 
-from Ganga.GPIDev.Adapters.IApplication import PostprocessStatusUpdate
-
-from Ganga.GPIDev.Lib.Registry.JobRegistry import JobRegistrySlice, _wrap
-
-from Ganga.GPIDev.Base.Proxy import isType, getName, GPIProxyObjectFactory, addProxy, stripProxy
-from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
-
-from Ganga.Lib.Splitters import DefaultSplitter
-
-import copy
-import glob
-import os
-import re
-import shutil
-import sys
-import time
-
-import uuid
-from JobTime import JobTime
-
-import Ganga.GPIDev.Lib.File.FileUtils
-from Ganga.GPIDev.Lib.File import getFileConfigKeys
-import Ganga.Core.Sandbox as Sandbox
-
-logger = Ganga.Utility.logging.getLogger()
-config = Ganga.Utility.Config.getConfig('Configuration')
+# Global Variables
+logger = getLogger()
+config = getConfig('Configuration')
 
 
 class JobStatusError(GangaException):
@@ -229,6 +208,8 @@ class Job(GangaObject):
 
     def __construct__(self, args):
 
+        from Ganga.GPIDev.Base.Proxy import isType
+
         self.status = "new"
         logger.debug("Intercepting __construct__")
 
@@ -280,6 +261,9 @@ class Job(GangaObject):
     # _on_attribute__set__
     def __deepcopy__(self, memo=None):
 
+        from Ganga.GPIDev.Lib.File.FileUtils import safeTransformFile
+        from Ganga.GPIDev.Base.Proxy import stripProxy
+
         # Due to problems on Hammercloud due to uncopyable object lets
         # explicitly stop these objects going anywhere near the __deepcopy__
 
@@ -322,11 +306,11 @@ class Job(GangaObject):
             # Apply needed transform to move Sandbox item to the
             if self.inputsandbox != []:
                 for i in self.inputsandbox:
-                    c.inputfiles.append(Ganga.GPIDev.Lib.File.FileUtils.safeTransformFile(i))
+                    c.inputfiles.append(safeTransformFile(i))
             else:
                 if self.master and self.master.inputsandbox != []:
                     for i in self.master.inputsandbox:
-                        c.inputfiles.append(Ganga.GPIDev.Lib.File.FileUtils.safeTransformFile(i))
+                        c.inputfiles.append(safeTransformFile(i))
 
             c.inputsandbox = []
 
@@ -375,6 +359,9 @@ class Job(GangaObject):
         return self.__deepcopy__()
 
     def _attribute_filter__get__(self, name):
+
+        from Ganga.GPIDev.Lib.GangaList.GangaList import makeGangaListByRef
+        from Ganga.GPIDev.Base.Proxy import addProxy, stripProxy
 
         #logger.debug( "Intercepting _attribute_filter__get__" )
 
@@ -576,6 +563,9 @@ class Job(GangaObject):
         #import traceback
         # traceback.print_stack()
 
+        from Ganga.Utility.logging import log_user_exception
+        from Ganga.GPIDev.Adapters.IApplication import PostprocessStatusUpdate
+
         fqid = self.getFQID('.')
         logger.debug('attempt to change job %s status from "%s" to "%s"', fqid, self.status, newstatus)
 
@@ -647,6 +637,8 @@ class Job(GangaObject):
         """Return a 'live' version of the output post processing map.
         Can't be done at load/global namespace because then user modules are ignored."""
 
+        from Ganga.GPIDev.Lib.File import getFileConfigKeys
+
         backend_output_postprocess = {}
 
         keys = getFileConfigKeys()
@@ -665,6 +657,8 @@ class Job(GangaObject):
         return backend_output_postprocess
 
     def postprocessoutput(self, outputfiles, outputdir):
+
+        from Ganga.GPIDev.Base.Proxy import getName
 
         if len(outputfiles) == 0:
             return
@@ -711,6 +705,8 @@ class Job(GangaObject):
 
     def validateOutputfilesOnSubmit(self):
 
+        from Ganga.GPIDev.Base.Proxy import isType
+
         for outputfile in self.outputfiles:
             from Ganga.GPI import MassStorageFile
             if isType(outputfile, MassStorageFile):
@@ -722,6 +718,8 @@ class Job(GangaObject):
         return (True, '')
 
     def outputFilesFailures(self):
+
+        from Ganga.GPIDev.Base.Proxy import getName
 
         postprocessFailure = False
 
@@ -829,6 +827,9 @@ class Job(GangaObject):
         self.getMonitoringService().rollback()
 
     def _auto__init__(self, registry=None, unprepare=None):
+        from Ganga.Core.GangaRepository import getRegistry
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
+
         if registry is None:
             registry = getRegistry(self.default_registry)
 
@@ -879,6 +880,8 @@ class Job(GangaObject):
         if the job is not split (subjob and masterjob are the same object)
         """
 
+        from Ganga.Core import Sandbox
+
         name = '_input_sandbox_' + self.getFQID('_') + '%s.tgz'
 
         if master is True:
@@ -925,6 +928,8 @@ class Job(GangaObject):
         """ Create an unpacked input sandbox which contains files (a list of File or FileBuffer objects).
         'master' flag is not used in this case, and it provided only for uniformity with createPackedInputSandbox() method
         """
+
+        from Ganga.Core import Sandbox
 
         logger.debug("Creating InputSandbox")
         files = [f for f in files if hasattr(
@@ -1132,6 +1137,8 @@ class Job(GangaObject):
         can been seen by calling 'shareref'. See help(shareref) for further details.
 
         """
+        from Ganga.GPIDev.Base.Proxy import isType, getName
+
         if not hasattr(self.application, 'is_prepared'):
             logger.warning("Non-preparable application %s cannot be prepared" % getName(self.application))
             return
@@ -1151,6 +1158,9 @@ class Job(GangaObject):
         '''Revert the application associated with a job to the unprepared state
         Returns True on success.
         '''
+
+        from Ganga.GPIDev.Base.Proxy import getName
+
         if not hasattr(self.application, 'is_prepared'):
             logger.warning(
                 "Non-preparable application %s cannot be unprepared" % getName(self.application))
@@ -1303,6 +1313,8 @@ class Job(GangaObject):
 
     def _getRuntimeHandler(self):
 
+        from Ganga.GPIDev.Base.Proxy import getName
+
         rtHandler = None
         if self.master is None:
             #   I am the master Job
@@ -1382,6 +1394,9 @@ class Job(GangaObject):
     def _doSplitting(self):
         # Temporary polution of Atlas stuff to (almost) transparently switch
         # from Panda to Jedi
+
+        from Ganga.GPIDev.Base.Proxy import getName
+
         rjobs = None
 
         if getName(self.backend) == "Jedi" and self.splitter:
@@ -1454,6 +1469,9 @@ class Job(GangaObject):
 
         For split jobs: consult https://twiki.cern.ch/twiki/bin/view/ArdaGrid/GangaSplitters#Subjob_submission
         '''
+
+        from Ganga.Utility.logging import log_user_exception
+        from Ganga.GPIDev.Base.Proxy import isType, getName
 
         logger.debug("Submitting Job %s" % str(self.getFQID('.')))
 
@@ -1653,6 +1671,10 @@ class Job(GangaObject):
 
         If force=True then remove job without killing it.
         '''
+
+        from Ganga.Utility.logging import log_user_exception
+        from Ganga.Core.GangaRepository import RegistryKeyError
+        from Ganga.GPIDev.Base.Proxy import getName
 
         template = self.status == 'template'
 
@@ -1915,6 +1937,8 @@ class Job(GangaObject):
         #  - same for the master job...
 
         from Ganga.Core import GangaException, IncompleteJobSubmissionError, JobManagerError
+        from Ganga.GPIDev.Base.Proxy import stripProxy
+        from Ganga.GPIDev.Base.Proxy import isType
 
         fqid = self.getFQID('.')
         logger.info('resubmitting job %s', fqid)
@@ -2069,6 +2093,8 @@ class Job(GangaObject):
         """ Helper method to unconditionally commit to the repository. The 'objects' list specifies objects
         to be commited (for example the subjobs). If objects are not specified then just the self is commited """
 
+        from Ganga.Core.GangaRepository import getRegistry
+
         if objects is None:
             objects = [self]
         # EBKE changes
@@ -2088,6 +2114,8 @@ class Job(GangaObject):
 #        return v
 
     def _repr(self):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         if self.id is None:
             id = "None"
         else:
@@ -2107,6 +2135,8 @@ class Job(GangaObject):
 # return tuple(index)
 
     def _subjobs_proxy(self):
+        from Ganga.GPIDev.Lib.Registry.JobRegistry import JobRegistrySlice, _wrap
+
         subjobs = JobRegistrySlice('jobs(%d).subjobs' % self.id)
         for j in self.subjobs:
             subjobs.objects[j.id] = j
@@ -2118,6 +2148,8 @@ class Job(GangaObject):
         return rslice._display(1)
 
     def __setattr__(self, attr, value):
+
+        from Ganga.GPIDev.Base.Proxy import getName
 
         if attr == 'outputfiles':
 
