@@ -48,6 +48,7 @@ class LHCbDataset(GangaDataset):
     docstr = 'Specify the dataset persistency technology'
     schema['persistency'] = SimpleItem(
         defvalue=None, typelist=['str', 'type(None)'], doc=docstr)
+    schema['treat_as_inputfiles'] = SimpleItem(defvalue=False, doc="Treat the inputdata as inputfiles, i.e. copy the inputdata to the WN")
 
     _schema = Schema(Version(3, 0), schema)
     _category = 'datasets'
@@ -59,7 +60,9 @@ class LHCbDataset(GangaDataset):
                       'symmetricDifference', 'union', 'bkMetadata',
                       'isEmpty', 'hasPFNs', 'getPFNs']  # ,'pop']
 
-    def __init__(self, files=[], persistency=None, depth=0):
+    def __init__(self, files=None, persistency=None, depth=0):
+        if files is None:
+            files = []
         new_files = GangaList()
         if isType(files, LHCbDataset):
             for this_file in files:
