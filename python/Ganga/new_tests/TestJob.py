@@ -81,3 +81,18 @@ class TestJob(unittest.TestCase):
 
         self.assertIsInstance(j2, Job)
         self.assertEqual(j2.name, "Test")
+
+    def test_exceptions(self):
+        """
+        Create the exceptions classes
+        """
+        from Ganga.GPIDev.Lib.Job.Job import JobStatusError, JobError, PreparedStateError, FakeError
+        e1 = JobStatusError()
+        e2 = JobError()
+        e3 = PreparedStateError()
+        e4 = FakeError()
+
+        self.assertIsInstance(e1, JobStatusError)
+        self.assertIsInstance(e2, JobError)
+        self.assertIsInstance(e3, PreparedStateError)
+        self.assertIsInstance(e4, FakeError)
