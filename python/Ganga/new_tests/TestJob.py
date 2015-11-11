@@ -96,3 +96,17 @@ class TestJob(unittest.TestCase):
         self.assertIsInstance(e2, JobError)
         self.assertIsInstance(e3, PreparedStateError)
         self.assertIsInstance(e4, FakeError)
+
+    def test_status_update(self):
+        """
+        Test status changes
+        """
+        from Ganga.GPIDev.Lib.Job.Job import Job, JobStatusError
+        j = Job()
+        def update():
+            j.updateStatus("running")
+
+        self.assertRaises(JobStatusError, update)
+
+        j.updateStatus("submitting")
+        self.assertEqual(j.status, "submitting")
