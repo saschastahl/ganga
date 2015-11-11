@@ -23,6 +23,7 @@ from Ganga.Utility.Config import getConfig, ConfigError
 from Ganga.Core import GangaException
 from Ganga.GPIDev.Lib.Job.JobTime import JobTime
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
+from Ganga.GPIDev.Adapters.IPostProcessor import MultiPostProcessor
 
 # Global Variables
 logger = getLogger()
@@ -563,6 +564,7 @@ class Job(GangaObject):
 
         from Ganga.Utility.logging import log_user_exception
         from Ganga.GPIDev.Adapters.IApplication import PostprocessStatusUpdate
+        from Ganga.GPIDev.Base.Proxy import stripProxy
 
         fqid = self.getFQID('.')
         logger.debug('attempt to change job %s status from "%s" to "%s"', fqid, self.status, newstatus)
