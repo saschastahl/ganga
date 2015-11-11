@@ -45,3 +45,39 @@ class TestJob(unittest.TestCase):
         self.assertEqual(len(j.inputfiles), 0)
         self.assertEqual(len(j.outputfiles), 0)
         self.assertEqual(j.name, "Test")
+
+    def test_proxy(self):
+        """
+        Check a proxy can be added
+        """
+        import Ganga.GPIDev.Base.Proxy
+        from Ganga.GPIDev.Lib.Job.Job import Job
+
+        j = Job()
+        pj = Ganga.GPIDev.Base.Proxy.addProxy(j)
+        pj.name = "Test"
+
+        self.assertIsInstance(Ganga.GPIDev.Base.Proxy.stripProxy(pj), Job)
+        self.assertEqual(pj.name, "Test")
+
+    def test_proxy_class_creation(self):
+        """
+        Check the copy construct method with proxy
+        """
+        # TODO: Should be done with: import ganga; j = ganga.Job()
+        # TODO: GPIPRoxyFactory also doesn't work due to registry not being present
+        #from Ganga.GPIDev.Base.Proxy import GPIProxyClassFactory
+        #from Ganga.GPIDev.Lib.Job.Job import Job
+        #pJob = GPIProxyClassFactory("Job", Job)
+        #pj = pJob()
+        #pj.name = "Test"
+
+        from Ganga.GPIDev.Lib.Job.Job import Job
+        j = Job()
+        j.name = "Test"
+        j2 = Job()
+        j2.name = "Test2"
+        j2.__construct__( tuple([j]) )
+
+        self.assertIsInstance(j2, Job)
+        self.assertEqual(j2.name, "Test")
