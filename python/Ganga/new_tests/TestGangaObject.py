@@ -112,8 +112,28 @@ class TestNode(TestCase):
     def tearDown(self):
         pass
 
-#class TestObjectMetaclass(TestCase):
+class TestException(TestCase):
 
-#    def testObjectMetaclass(self):
-#        ObjectMetaclass(name='', bases=(), dict={'_schema': None})
+    def test_exception(self):
+        """
+        Create the exception class
+        """
+        from Ganga.GPIDev.Base.Objects import PreparedStateError
+        e1 = PreparedStateError()
+
+        self.assertIsInstance(e1, PreparedStateError)
+
+class TestDescriptor(TestCase):
+
+    def test_descriptor(self):
+        """
+        Create the descriptor
+        """
+        from Ganga.GPIDev.Base.Objects import Descriptor
+        d = Descriptor("Test", {})
+
+        self.assertIsInstance(d, Descriptor)
+
+
+
 
