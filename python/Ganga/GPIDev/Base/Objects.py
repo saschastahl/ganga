@@ -804,7 +804,7 @@ class GangaObject(Node):
     # the FIRST PARENT Job is returned...
     # this method is for convenience and may well be moved to some subclass
     def getJobObject(self):
-        from Ganga.GPIDev.Lib.Job import Job
+        from Ganga.GPIDev.Lib.Job.Job import Job
         r = self._getRoot(cond=lambda o: isType(o, Job))
         if not isType(r, Job):
             raise AssertionError('no job associated with object ' + repr(self))
