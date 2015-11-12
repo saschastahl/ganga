@@ -109,7 +109,7 @@ def runProxyMethod(obj, method_name, *args):
 
 def stripComponentObject(v, cfilter, item):
 
-    from Ganga.GPIDev.Base import GangaObject
+    from Ganga.GPIDev.Base.Objects import GangaObject
 
     def getImpl(v):
         if v is None:
@@ -152,7 +152,7 @@ class ProxyDataDescriptor(object):
         def disguiseComponentObject(v):
             # get the proxy for implementation object
             def getProxy(v):
-                from Ganga.GPIDev.Base import GangaObject
+                from Ganga.GPIDev.Base.Objects import GangaObject
                 if not isType(v, GangaObject):
                     raise GangaAttributeError("invalid type: cannot assign '%s' to attribute '%s'" % (repr(v), self._name))
                 return GPIProxyObjectFactory(v)
@@ -175,7 +175,7 @@ class ProxyDataDescriptor(object):
         # apply attribute conversion
         def disguiseAttribute(v):
             # FIXME: this is obsoleted method
-            from Ganga.GPIDev.Base import GangaObject
+            from Ganga.GPIDev.Base.Objects import GangaObject
             if isType(v, GangaObject):
                 return GPIProxyObjectFactory(v)
             return v

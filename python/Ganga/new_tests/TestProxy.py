@@ -1,6 +1,10 @@
-import unittest2
+# import unittest2 for python 2.6
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
-from Ganga.GPIDev.Base import GangaObject
+from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem, FileItem
 
 
@@ -22,7 +26,7 @@ import Ganga.GPIDev.Base.Proxy
 import Ganga.Core.exceptions
 
 
-class TestProxy(unittest2.TestCase):
+class TestProxy(unittest.TestCase):
     """
     Test the Proxy functions
     """
@@ -104,7 +108,7 @@ class TestProxy(unittest2.TestCase):
         self.assertRaises(AttributeError, _call)
 
 
-class TestVersion(unittest2.TestCase):
+class TestVersion(unittest.TestCase):
     """
     Make sure that the version checks are working
     """
@@ -122,7 +126,7 @@ class TestVersion(unittest2.TestCase):
         self.assertFalse(v1.isCompatible(v2))
 
 
-class TestSchema(unittest2.TestCase):
+class TestSchema(unittest.TestCase):
     def test_create(self):
         """
         Create a complex schema and make sure all the items are added
