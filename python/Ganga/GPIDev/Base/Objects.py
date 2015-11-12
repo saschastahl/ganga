@@ -13,22 +13,16 @@
 #   and followed by
 #    obj._setDirty()
 
-import Ganga.Utility.logging
-
+# System imports
 import types
 from copy import deepcopy
 
-import Ganga.GPIDev.Schema as Schema
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
+from Ganga.Core.exceptions import GangaException
 
-from Ganga.GPIDev.Base.Proxy import GPIProxyClassFactory, ProxyDataDescriptor, ProxyMethodDescriptor, GangaAttributeError, TypeMismatchError, isType, stripProxy, GPIProxyObjectFactory, getName
-from Ganga.Core.exceptions import GangaValueError, GangaException
-
-from Ganga.GPIDev.Base.VPrinter import VPrinter, VSummaryPrinter
-
-from Ganga.Utility.Plugin import allPlugins
-
-
-logger = Ganga.Utility.logging.getLogger(modulename=1)
+# Global Variables
+logger = getLogger(modulename=1)
 
 
 class PreparedStateError(GangaException):
@@ -59,6 +53,8 @@ class Node(object):
         return d
 
     def __setstate__(self, dict):
+        from Ganga.GPIDev.Base.Proxy import isType
+
         for n, v in dict['_data'].items():
             if isType(v, Node):
                 v._setParent(self)
@@ -80,6 +76,8 @@ class Node(object):
         return obj
 
     def __deepcopy__(self, memo=None):
+        from Ganga.GPIDev.Base.Proxy import stripProxy
+
         cls = type(stripProxy(self))
         obj = super(cls, cls).__new__(cls)
         d = stripProxy(self).__getstate__()
@@ -172,6 +170,9 @@ class Node(object):
     # if schema of self and srcobj are not compatible raises a ValueError
     # ON FAILURE LEAVES SELF IN INCONSISTENT STATE
     def copyFrom(self, srcobj, _ignore_atts=None):
+        from Ganga.GPIDev.Base.Proxy import isType, stripProxy
+        from Ganga.Core.exceptions import GangaValueError
+
         if _ignore_atts is None:
             _ignore_atts = []
         _srcobj = stripProxy(srcobj)
@@ -207,12 +208,14 @@ class Node(object):
                 setattr(self, name, c)
 
     def printTree(self, f=None, sel=''):
+        from Ganga.GPIDev.Base.VPrinter import VPrinter
         self.accept(VPrinter(f, sel))
 
     #printPrepTree is only ever run on applications, from within IPrepareApp.py
     #if you (manually) try to run printPrepTree on anything other than an application, it will not work as expected
     #see the relevant code in VPrinter to understand why
     def printPrepTree(self, f=None, sel='preparable' ):
+        from Ganga.GPIDev.Base.VPrinter import VPrinter
         self.accept(VPrinter(f, sel))
 
     def printSummaryTree(self, level=0, verbosity_level=0, whitespace_marker='', out=None, selection=''):
@@ -225,9 +228,11 @@ class Node(object):
         out: An output stream to print to. The last line of output should be printed without a newline.'
         selection: See VPrinter for an explaintion of this.
         """
+        from Ganga.GPIDev.Base.VPrinter import VSummaryPrinter
         self.accept(VSummaryPrinter(level, verbosity_level, whitespace_marker, out, selection))
 
     def __eq__(self, node):
+        from Ganga.GPIDev.Base.Proxy import isType
 
         if self is node:
             return 1
@@ -291,10 +296,14 @@ class Descriptor(object):
         return getattr(obj, name)
 
     def _check_getter(self):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         if self._getter_name:
             raise AttributeError('cannot modify or delete "%s" property (declared as "getter")' % getName(self))
 
     def __get__(self, obj, cls):
+        from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+
         if obj is None:
             return cls._schema[getName(self)]
         else:
@@ -343,6 +352,8 @@ class Descriptor(object):
 
     def __cloneVal(self, v, obj):
 
+        from Ganga.GPIDev.Base.Proxy import GangaAttributeError, isType, stripProxy, getName
+
         item = obj._schema[getName(self)]
 
         if v is None:
@@ -389,6 +400,9 @@ class Descriptor(object):
             return v
 
     def __set__(self, _obj, _val):
+
+        from Ganga.GPIDev import Schema
+        from Ganga.GPIDev.Base.Proxy import isType, stripProxy, getName
 
         obj = stripProxy(_obj)
         val = stripProxy(_val)
@@ -470,6 +484,8 @@ class Descriptor(object):
         obj._setDirty()
 
     def __delete__(self, obj):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         # self._check_getter()
         del obj._data[getName(self)]
 
@@ -486,6 +502,10 @@ class ObjectMetaclass(type):
     _descriptor = Descriptor
 
     def __init__(cls, name, bases, this_dict):
+        from Ganga.GPIDev import Schema
+        from Ganga.GPIDev.Base.Proxy import GPIProxyClassFactory, ProxyDataDescriptor, ProxyMethodDescriptor, getName
+        from Ganga.Utility.Plugin import allPlugins
+
         super(ObjectMetaclass, cls).__init__(name, bases, this_dict)
 
         # ignore the 'abstract' base class
@@ -632,6 +652,7 @@ class GangaObject(Node):
     # construct an object of this type from the arguments. Defaults to copy
     # constructor.
     def __construct__(self, args):
+        from Ganga.GPIDev.Base.Proxy import  TypeMismatchError
         self._lock_count = {}
         # act as a copy constructor applying the object conversion at the same
         # time (if applicable)
@@ -660,6 +681,9 @@ class GangaObject(Node):
     # on the deepcopy reset all non-copyable properties as defined in the
     # schema
     def __deepcopy__(self, memo=None):
+        from Ganga.GPIDev import Schema
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
+
         self._getReadAccess()
         c = super(GangaObject, self).__deepcopy__(memo)
         if self._schema is not None:
@@ -805,6 +829,8 @@ class GangaObject(Node):
     # this method is for convenience and may well be moved to some subclass
     def getJobObject(self):
         from Ganga.GPIDev.Lib.Job.Job import Job
+        from Ganga.GPIDev.Base.Proxy import isType
+        
         r = self._getRoot(cond=lambda o: isType(o, Job))
         if not isType(r, Job):
             raise AssertionError('no job associated with object ' + repr(self))
@@ -839,6 +865,8 @@ class GangaObject(Node):
 
 
 def string_type_shortcut_filter(val, item):
+    from Ganga.GPIDev.Base.Proxy import isType
+
     if isType(val, type('')):
         if item is None:
             raise ValueError('cannot apply default string conversion, probably you are trying to use it in the constructor')
