@@ -830,7 +830,7 @@ class GangaObject(Node):
     def getJobObject(self):
         from Ganga.GPIDev.Lib.Job.Job import Job
         from Ganga.GPIDev.Base.Proxy import isType
-        
+
         r = self._getRoot(cond=lambda o: isType(o, Job))
         if not isType(r, Job):
             raise AssertionError('no job associated with object ' + repr(self))

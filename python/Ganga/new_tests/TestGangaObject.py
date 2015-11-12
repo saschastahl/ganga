@@ -1,9 +1,13 @@
 
-from unittest import TestCase
+# import unittest2 for python 2.6
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from Ganga.GPIDev.Base.Objects import Node, GangaObject, ObjectMetaclass
 
-class TestGangaObject(TestCase):
+class TestGangaObject(unittest.TestCase):
 
     def setUp(self):
         self.obj = GangaObject()
@@ -79,7 +83,7 @@ class TestGangaObject(TestCase):
     def tearDown(self):
         pass
 
-class TestNode(TestCase):
+class TestNode(unittest.TestCase):
 
     def setUp(self):
         self.obj = Node(None)
@@ -112,7 +116,7 @@ class TestNode(TestCase):
     def tearDown(self):
         pass
 
-class TestException(TestCase):
+class TestException(unittest.TestCase):
 
     def test_exception(self):
         """
@@ -123,7 +127,7 @@ class TestException(TestCase):
 
         self.assertIsInstance(e1, PreparedStateError)
 
-class TestDescriptor(TestCase):
+class TestDescriptor(unittest.TestCase):
 
     def test_descriptor(self):
         """
