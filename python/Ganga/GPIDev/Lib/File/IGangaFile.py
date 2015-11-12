@@ -1,4 +1,4 @@
-from Ganga.GPIDev.Base import GangaObject
+from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
 from fnmatch import fnmatch
 import re

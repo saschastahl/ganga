@@ -1,4 +1,4 @@
-from Ganga.GPIDev.Lib.File import Configure
+from Ganga.GPIDev.Lib.File.Configure import Configure
 from Ganga.GPIDev.Lib.File.Configure import getSharedPath
 
 from Ganga.GPIDev.Lib.File.File import File

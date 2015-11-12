@@ -14,7 +14,7 @@ import uuid
 
 # Required Ganga imports from other modules
 # NOTE: Have to import defvalue types in the Schema to make sure they are added to the plugin system
-from Ganga.GPIDev.Base import GangaObject
+from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Schema import Version, Schema, FileItem, ComponentItem, SimpleItem, GangaFileItem
 from Ganga.GPIDev.Lib.Job.MetadataDict import MetadataDict
 from Ganga.Lib.Executable.Executable import Executable
