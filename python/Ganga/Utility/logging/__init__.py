@@ -518,14 +518,3 @@ def log_unknown_exception():
 
 # extra imports for more convenient work with the logging module
 getLevelName = logging.getLevelName
-
-if __name__ == "__main__":
-    print('Little test')
-
-    private_logger = logging.getLogger("TESTLOGGER.CHILD.GRANDCHILD")
-    formatter = logging.Formatter(_formats['DEBUG'])
-    console = logging.StreamHandler()
-    console.setFormatter(formatter)
-    private_logger.setLevel(logging.DEBUG)
-    private_logger.addHandler(console)
-    private_logger.critical('hello')
