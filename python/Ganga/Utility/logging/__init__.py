@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 ##########################################################################
 # Ganga Project. http://cern.ch/ganga
@@ -20,18 +19,18 @@ from __future__ import print_function
 #  - special functions:
 #       - log_user_exception() allows to format nicely exception messages
 
+# System imports
+from __future__ import print_function
 import logging
-import logging.handlers as handlers
+from logging import handlers
 import sys
+import threading
 
+# Required Ganga imports from other modules
 # logger configuration
 # settings for new loggers may be added here at will (for example read
 # from the config file)
 import Ganga.Utility.Config
-
-import Ganga.Utility.ColourText as ColourText
-
-import threading
 
 # initialize the root logger for the logger created directly in python
 # executable scripts which have no name starting by "Ganga."
@@ -100,6 +99,8 @@ config.addOption('_customFormat', "", "custom formatting string for Ganga loggin
 class ColourFormatter(logging.Formatter, object):
 
     def __init__(self, *args, **kwds):
+        from Ganga.Utility import ColourText
+
         logging.Formatter.__init__(self, *args, **kwds)
         fg = ColourText.Foreground()
         fx = ColourText.Effects()
@@ -123,6 +124,8 @@ class ColourFormatter(logging.Formatter, object):
             return s
 
     def setColour(self, yes):
+        from Ganga.Utility import ColourText
+
         if yes:
             self.markup = ColourText.ANSIMarkup()
         else:
