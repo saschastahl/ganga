@@ -89,10 +89,12 @@ There is a GPI wrapper in Ganga.GPIDev.Lib.Config which:
 
 
 """
-
+# System imports
 from functools import reduce
 
+# Required Ganga imports from other modules
 from Ganga.Core.exceptions import GangaException
+
 
 class ConfigError(GangaException):
 
