@@ -30,7 +30,7 @@ import threading
 # logger configuration
 # settings for new loggers may be added here at will (for example read
 # from the config file)
-import Ganga.Utility.Config
+from Ganga.Utility.Config.Config import makeConfig
 
 # initialize the root logger for the logger created directly in python
 # executable scripts which have no name starting by "Ganga."
@@ -73,7 +73,7 @@ _global_level = None
 # all loggers which are used by all modules
 _allLoggers = {}
 
-config = Ganga.Utility.Config.makeConfig("Logging", """control the messages printed by Ganga
+config = makeConfig("Logging", """control the messages printed by Ganga
 The settings are applied hierarchically to the loggers. Ganga is the name of the top-level logger which
 applies by default to all Ganga.* packages unless overriden in sub-packages.
 You may define new loggers in this section.

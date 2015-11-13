@@ -7,7 +7,7 @@ from __future__ import absolute_import
 
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem
 
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig
 import Ganga.Utility.logging
 from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
 logger = Ganga.Utility.logging.getLogger()
@@ -364,5 +364,5 @@ class LCGSEFile(IGangaFile):
 
 # add LCGSEFile objects to the configuration scope (i.e. it will be
 # possible to write instatiate LCGSEFile() objects via config file)
-import Ganga.Utility.Config
-Ganga.Utility.Config.config_scope['LCGSEFile'] = LCGSEFile
+from Ganga.Utility.Config.Config import config_scope
+config_scope['LCGSEFile'] = LCGSEFile

@@ -5,14 +5,13 @@ from .IGangaFile import IGangaFile
 import logging
 from Ganga.Utility.logging import getLogger
 from Ganga.GPIDev.Base.Proxy import isType, GPIProxyObjectFactory
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig, config_scope
 import re
 import copy
 import glob
 import os
 import pickle
 import stat
-import Ganga.Utility.Config
 
 logger = getLogger()
 regex = re.compile('[*?\[\]]')
@@ -508,4 +507,4 @@ class GoogleFile(IGangaFile):
             return isinstance(self, to_match._impl)
         return to_match == self
 
-Ganga.Utility.Config.config_scope['GoogleFile'] = GoogleFile
+config_scope['GoogleFile'] = GoogleFile

@@ -6,13 +6,11 @@ from __future__ import absolute_import
 ##########################################################################
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem
 
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig, config_scope
 from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
 from Ganga.Utility import Shell
 from Ganga.Utility.logging import getLogger
 from .IGangaFile import IGangaFile
-
-from Ganga.GPIDev.Lib.File import FileUtils
 
 import re
 import os
@@ -570,5 +568,5 @@ class MassStorageFile(IGangaFile):
 
 # add MassStorageFile objects to the configuration scope (i.e. it will be
 # possible to write instatiate MassStorageFile() objects via config file)
-Ganga.Utility.Config.config_scope['MassStorageFile'] = MassStorageFile
+config_scope['MassStorageFile'] = MassStorageFile
 

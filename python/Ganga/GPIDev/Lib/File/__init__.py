@@ -18,7 +18,7 @@ import Ganga.Utility.logging
 
 from Ganga.GPIDev.Base.Proxy import stripProxy
 from Ganga.GPIDev.Base.Filters import allComponentFilters
-from Ganga.Utility.Config import getConfig, ConfigError
+from Ganga.Utility.Config.Config import getConfig, ConfigError
 
 
 import fnmatch

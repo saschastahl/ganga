@@ -30,7 +30,7 @@
 import os
 
 from Ganga.Utility.Shell import Shell
-from Ganga.Utility.Config import getConfig, ConfigError
+from Ganga.Utility.Config.Config import getConfig, ConfigError
 from Ganga.Utility.logging import getLogger
 
 _allShells = {}

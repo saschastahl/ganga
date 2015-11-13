@@ -17,7 +17,7 @@ import Ganga.Utility.logging
 logger = Ganga.Utility.logging.getLogger()
 
 
-from Ganga.Utility.Config import makeConfig, getConfig
+from Ganga.Utility.Config.Config import makeConfig, getConfig
 from Ganga.Utility.files import expandfilename
 config = makeConfig('Preparable', 'Parameters for preparable applications')
 config.addOption('unprepare_on_copy', False, 'Unprepare a prepared application when it is copied')

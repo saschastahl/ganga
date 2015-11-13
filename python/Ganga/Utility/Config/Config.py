@@ -113,9 +113,6 @@ class ConfigError(GangaException):
 
 logger = None
 
-import Ganga.Utility.logging
-
-
 def getLogger():
     global logger
     if logger is not None:
@@ -124,6 +121,7 @@ def getLogger():
     # for the configuration of the logging package itself (in the initial
     # phases) the logging may be disabled
     try:
+        import Ganga.Utility.logging
         logger = Ganga.Utility.logging.getLogger()
         return logger
     except AttributeError as err:
@@ -761,6 +759,9 @@ def read_ini_files(filenames, system_vars):
 
     import re
     import os
+
+    import Ganga.Utility.logging
+
     logger = getLogger()
 
     logger.debug('reading ini files: %s', str(filenames))

@@ -20,7 +20,7 @@ from Ganga.GPIDev.Base.Filters import allComponentFilters
 
 import re
 
-import Ganga.Utility.Config
+import Ganga.Utility.Config.Config
 
 from Ganga.GPIDev.Lib.File import getSharedPath
 
@@ -116,7 +116,7 @@ class File(GangaObject):
 
 # add File objects to the configuration scope (i.e. it will be possible to
 # write instatiate File() objects via config file)
-Ganga.Utility.Config.config_scope['File'] = File
+Ganga.Utility.Config.Config.config_scope['File'] = File
 
 def string_file_shortcut_file(v, item):
     if isinstance(v, str):
@@ -254,7 +254,7 @@ class ShareDir(GangaObject):
         file are checked"""
         return self.executable or is_executable(expandfilename(self.name))
 
-Ganga.Utility.Config.config_scope['ShareDir'] = ShareDir
+Ganga.Utility.Config.Config.config_scope['ShareDir'] = ShareDir
 
 def string_sharedfile_shortcut(v, item):
     if isinstance(v, str):

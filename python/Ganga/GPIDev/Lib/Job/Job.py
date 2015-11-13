@@ -20,7 +20,7 @@ from Ganga.GPIDev.Lib.Job.MetadataDict import MetadataDict
 from Ganga.Lib.Executable.Executable import Executable
 from Ganga.Lib.Localhost.Localhost import Localhost
 from Ganga.Utility.logging import getLogger
-from Ganga.Utility.Config import getConfig, ConfigError
+from Ganga.Utility.Config.Config import getConfig, ConfigError
 from Ganga.Core import GangaException
 from Ganga.GPIDev.Lib.Job.JobTime import JobTime
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList

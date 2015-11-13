@@ -30,7 +30,7 @@
 # has been defined.
 
 from Ganga.GPIDev.Base.Proxy import isType
-from Ganga.Utility.Config import makeConfig
+from Ganga.Utility.Config.Config import makeConfig
 from Ganga.Utility.Config.Config import ConfigError
 
 # test configuration properties

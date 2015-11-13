@@ -11,7 +11,7 @@ import copy
 
 from Ganga.Utility.logic import implies
 
-import Ganga.Utility.Config
+from Ganga.Utility.Config.Config import makeConfig, getConfig
 
 from Ganga.Core.exceptions import GangaAttributeError
 
@@ -160,7 +160,7 @@ class Schema(object):
     def createDefaultConfig(self):
         # create a configuration unit for default values of object properties
         # take the defaults from schema defaults
-        config = Ganga.Utility.Config.makeConfig(defaultConfigSectionName(self.name),\
+        config = makeConfig(defaultConfigSectionName(self.name),\
                                                 "default attribute values for %s objects" % self.name)
                                                 # self._pluginclass._proxyClass.__doc__ )
 
@@ -237,13 +237,13 @@ class Schema(object):
         stored_attr_key = def_name + ':' + str(attr)
 
         from Ganga.Utility.Config import Config
-        from Ganga.Utility.Config import getConfig
+        from Ganga.Utility.Config.Config import getConfig
         is_finalized = Config._after_bootstrap
 
         if is_finalized and stored_attr_key in _found_attrs.keys():
             defvalue = _found_attrs[stored_attr_key]
         else:
-            config = Ganga.Utility.Config.getConfig(def_name)
+            config = getConfig(def_name)
 
             # hidden, protected and sequence values are not represented in config
             if attr in config:

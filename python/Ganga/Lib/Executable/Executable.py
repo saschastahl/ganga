@@ -8,7 +8,7 @@ from Ganga.GPIDev.Adapters.IPrepareApp import IPrepareApp
 from Ganga.GPIDev.Adapters.IRuntimeHandler import IRuntimeHandler
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
 
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig
 
 from Ganga.GPIDev.Lib.File import File, ShareDir
 from Ganga.Core import ApplicationConfigurationError, ApplicationPrepareError

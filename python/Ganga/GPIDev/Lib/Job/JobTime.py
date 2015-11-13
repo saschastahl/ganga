@@ -3,8 +3,8 @@ import datetime
 from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
 
-import Ganga.Utility.Config
-Ganga.Utility.Config.config_scope['datetime'] = datetime
+from Ganga.Utility.Config.Config import config_scope
+config_scope['datetime'] = datetime
 
 from Ganga.Utility.logging import getLogger
 logger = getLogger(modulename=True)

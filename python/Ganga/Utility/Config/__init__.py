@@ -1,19 +1,13 @@
-from __future__ import absolute_import
-from .Config import getConfig, makeConfig, ConfigError, configure, allConfigs, setConfigOption, expandConfigPath, config_scope, setSessionValue, getFlavour
-import os.path
-
-## from Config import getConfigDict
-
-# here are some useful option filters
-
 
 def expandvars(c, v):
     """The ~ and $VARS are automatically expanded. """
+    import os.path
     return os.path.expanduser(os.path.expandvars(v))
 
 
 def expandgangasystemvars(c, v):
     """Expands vars with the syntax '@{VAR}' from the System config item."""
+    from Config import getConfig
     system = getConfig('System')
     for key in system.options.iterkeys():
         option = '@{%s}' % key

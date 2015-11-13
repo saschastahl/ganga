@@ -7,7 +7,7 @@ from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
 
 # config_scope is namespace used for evaluating simple objects (e.g. File)
-from Ganga.Utility.Config import config_scope
+from Ganga.Utility.Config.Config import config_scope
 
 from Ganga.Utility.Plugin import PluginManagerError, allPlugins
 from Ganga.GPIDev.Schema import Version

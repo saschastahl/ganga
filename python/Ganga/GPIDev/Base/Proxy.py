@@ -6,7 +6,7 @@ from __future__ import absolute_import
 ##########################################################################
 
 import Ganga.Utility.logging
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig
 
 import Ganga.GPIDev.Schema as Schema
 

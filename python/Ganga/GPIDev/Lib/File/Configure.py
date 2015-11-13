@@ -1,10 +1,10 @@
 
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig
 
 outputconfig = None
 
 if outputconfig == None:
-    from Ganga.Utility.Config import makeConfig
+    from Ganga.Utility.Config.Config import makeConfig
     outputconfig = makeConfig(
         "Output", "configuration section for postprocessing the output")
 
