@@ -10,7 +10,7 @@ from Ganga.Utility.Config.Config import getConfig
 
 import Ganga.GPIDev.Schema as Schema
 
-from Ganga.Core import GangaAttributeError, ProtectedAttributeError, ReadOnlyObjectError, TypeMismatchError
+from Ganga.Core.exceptions import GangaAttributeError, ProtectedAttributeError, ReadOnlyObjectError, TypeMismatchError
 
 import os
 

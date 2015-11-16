@@ -15,7 +15,7 @@
 import Ganga.Utility.logging
 
 from Ganga.Utility.Plugin import allPlugins
-from Ganga.Core import GangaException
+from Ganga.Core.exceptions import GangaException
 from Ganga.GPIDev.Base.Proxy import getName
 
 logger = Ganga.Utility.logging.getLogger()

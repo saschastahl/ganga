@@ -21,7 +21,7 @@ import types
 
 #from . import Schema
 
-from Ganga.Core import GangaAttributeError, TypeMismatchError, SchemaError
+from Ganga.Core.exceptions import GangaAttributeError, TypeMismatchError, SchemaError
 
 from Ganga.GPIDev.TypeCheck import _valueTypeAllowed
 

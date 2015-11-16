@@ -21,7 +21,7 @@ from Ganga.Lib.Executable.Executable import Executable
 from Ganga.Lib.Localhost.Localhost import Localhost
 from Ganga.Utility.logging import getLogger
 from Ganga.Utility.Config.Config import getConfig, ConfigError
-from Ganga.Core import GangaException
+from Ganga.Core.exceptions import GangaException
 from Ganga.GPIDev.Lib.Job.JobTime import JobTime
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
 from Ganga.GPIDev.Adapters.IPostProcessor import MultiPostProcessor

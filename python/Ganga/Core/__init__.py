@@ -3,16 +3,6 @@ Core package defines the fundamental subsystems of Ganga Architecture.
 Subsystems are autonomous components (such as a remote services) which may be independetly deployed.
 Subsystems may also be created as local objects in the Ganga Client process.
 """
-from __future__ import absolute_import
-
-import time
-
-from .exceptions import GangaException, ApplicationConfigurationError, \
-    BackendError, RepositoryError, BulkOperationRepositoryError, \
-    IncompleteJobSubmissionError, IncompleteKillError, JobManagerError, \
-    GangaAttributeError, GangaValueError, ProtectedAttributeError, \
-    ReadOnlyObjectError, TypeMismatchError, SchemaError, ApplicationPrepareError, \
-    GangaIOError
 
 monitoring_component = None
 
@@ -94,7 +84,9 @@ def bootstrap(reg, interactive_session):
 
 
 def should_wait_interactive_cb(t_total, critical_thread_ids, non_critical_thread_ids):
+    import time
     from Ganga.Core.MonitoringComponent.Local_GangaMC_Service import config
+
     global t_last
     if t_last is None:
         t_last = -time.time()

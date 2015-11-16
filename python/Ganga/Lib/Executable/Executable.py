@@ -11,7 +11,7 @@ from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
 from Ganga.Utility.Config.Config import getConfig
 
 from Ganga.GPIDev.Lib.File import File, ShareDir
-from Ganga.Core import ApplicationConfigurationError, ApplicationPrepareError
+from Ganga.Core.exceptions import ApplicationConfigurationError, ApplicationPrepareError
 
 from Ganga.Utility.logging import getLogger
 logger = getLogger()
