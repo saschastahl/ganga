@@ -1,33 +1,21 @@
-from __future__ import absolute_import
 ###############################################################################
 # Ganga Project. http://cern.ch/ganga
 #
 # $Id: Schema.py,v 1.3 2009-05-20 13:40:22 moscicki Exp $
 ##########################################################################
 
-import Ganga.Utility.logging
-
+# System Imports
 import copy
-
-from Ganga.Utility.logic import implies
-
-from Ganga.Utility.Config.Config import makeConfig, getConfig
-
-from Ganga.Core.exceptions import GangaAttributeError
-
-from Ganga.Utility.Plugin import allPlugins
-
 import types
 
-#from . import Schema
-
-from Ganga.Core.exceptions import GangaAttributeError, TypeMismatchError, SchemaError
-
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
 from Ganga.GPIDev.TypeCheck import _valueTypeAllowed
 
-logger = Ganga.Utility.logging.getLogger()
+# Global Variables
+logger = getLogger()
 
-## Dictionary for storing data from the Config system which takes a while to lookup
+# Dictionary for storing data from the Config system which takes a while to lookup
 _found_configs = {}
 _found_attrs = {}
 
@@ -98,6 +86,8 @@ class Schema(object):
         self._pluginclass = None
 
     def __getitem__(self, name):
+        from Ganga.Core.exceptions import GangaAttributeError
+
         if name in self.datadict:
             return self.datadict[name]
         else:
@@ -160,6 +150,8 @@ class Schema(object):
     def createDefaultConfig(self):
         # create a configuration unit for default values of object properties
         # take the defaults from schema defaults
+        from Ganga.Utility.Config.Config import makeConfig
+
         config = makeConfig(defaultConfigSectionName(self.name),\
                                                 "default attribute values for %s objects" % self.name)
                                                 # self._pluginclass._proxyClass.__doc__ )
@@ -230,6 +222,8 @@ class Schema(object):
         """ Get the default value of a schema item, both simple and component.
         If check is True then val is used instead of default value: this is used to check if the val may be used as a default value (e.g. if it is OK to use it as a value in the config file)
         """
+        from Ganga.Utility.Plugin import allPlugins
+
         def_name = defaultConfigSectionName(self.name)
 
         item = self.getItem(attr)
@@ -451,6 +445,8 @@ class Item(object):
 
     def _check_type(self, val, name, enableGangaList=True):
 
+        from Ganga.Core.exceptions import TypeMismatchError, SchemaError
+
         if enableGangaList:
             from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
         else:
@@ -518,6 +514,8 @@ class ComponentItem(Item):
     _forced = {}
 
     def __init__(self, category, optional=0, load_default=1, **kwds):
+        from Ganga.Utility.logic import implies
+
         Item.__init__(self)
         kwds['category'] = category
         kwds['optional'] = optional
