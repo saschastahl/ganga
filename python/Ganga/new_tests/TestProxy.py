@@ -5,7 +5,7 @@ except ImportError:
     import unittest
 
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem, FileItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem, FileItem, SharedItem
 
 
 class TestGangaObject(GangaObject):
@@ -135,6 +135,7 @@ class TestSchema(unittest.TestCase):
             'application': ComponentItem(category='applications'),
             'backend': ComponentItem(category='backends'),
             'name': SimpleItem('', comparable=0),
+            'share_str': SharedItem('Shared Test', comparable=0),
             'workdir': SimpleItem(defvalue=None, type='string', transient=1, protected=1, comparable=0),
             'status': SimpleItem(defvalue='new', protected=1, comparable=0),
             'id': SimpleItem(defvalue=None, type='string', protected=1, comparable=0),
@@ -145,7 +146,7 @@ class TestSchema(unittest.TestCase):
         }
         s = Schema(Version(1, 0), dd)
         self.assertEqual(s.allItems(), dd.items())
-        self.assertEqual(sorted(s.componentItems()+s.simpleItems()), sorted(dd.items()))
+        self.assertEqual(sorted(s.componentItems()+s.sharedItems()+s.simpleItems()), sorted(dd.items()))
 
     def test_get_non_existant(self):
         """
@@ -158,3 +159,72 @@ class TestSchema(unittest.TestCase):
             temp = p._schema['b']
 
         self.assertRaises(AttributeError, _get)
+
+class TestSchemaOld(unittest.TestCase):
+    def test_schema(self):
+        """
+        Copied the original schema tests to here. Probably covered in other places.
+        """
+
+        import copy
+        dd = {
+            'application': ComponentItem(category='applications'),
+            'backend':     ComponentItem(category='backends'),
+            'name':        SimpleItem('', comparable=0),
+            'workdir':     SimpleItem(defvalue=None, type='string', transient=1, protected=1, comparable=0),
+            'status':      SimpleItem(defvalue='new', protected=1, comparable=0),
+            'id':           SimpleItem(defvalue=None, type='string', protected=1, comparable=0),
+            'inputbox':     FileItem(defvalue=[], sequence=1),
+            'outputbox':    FileItem(defvalue=[], sequence=1),
+            'overriden_copyable': SimpleItem(defvalue=None, protected=1, copyable=1),
+            'plain_copyable': SimpleItem(defvalue=None, copyable=0)
+        }
+
+        schema = Schema(Version(1, 0), dd)
+
+        # NOT a public interface: emulate the Ganga Plugin object for test purposes
+        # Note that pclass MUST be a new-style class in order to support deepcopy
+        class pclass(object):
+            _category = 'jobs'
+            _name = 'Job'
+        schema._pluginclass = pclass
+        # end of emulating code
+        # allSchemas.add(schema)
+
+        assert(schema.name == 'Job')
+        assert(schema.category == 'jobs')
+
+        assert(schema.allItems() == dd.items())
+
+        cc = (schema.componentItems() + schema.simpleItems()).sort()
+        cc2 = dd.items().sort()
+        assert(cc == cc2)
+
+        for i in schema.allItems():
+            assert(schema[i[0]] == schema.getItem(i[0]))
+
+        assert(schema['id'].isA(SimpleItem))
+        assert(schema['application'].isA(ComponentItem))
+        assert(schema['inputbox'].isA(ComponentItem))
+        assert(schema['inputbox'].isA(FileItem))
+
+        assert(schema['id']['protected'])
+        assert(schema['id']['type'] == 'string')
+
+        schema2 = copy.deepcopy(schema)
+
+        assert(schema2 is not schema)
+        assert(schema.datadict is not schema2.datadict)
+        assert(schema._pluginclass is schema2._pluginclass)
+
+        for i in schema.allItems():
+            assert(schema.getItem(i[0]) is not schema2.getItem(i[0]))
+
+        # check the implied rules
+
+        assert(schema['overriden_copyable']['copyable'] == 1)
+        assert(schema['plain_copyable']['copyable'] == 0)
+        assert(schema['id']['copyable'] == 0)
+        assert(schema['application']['copyable'] == 1)
+
+        assert(not schema['id']['comparable'])
