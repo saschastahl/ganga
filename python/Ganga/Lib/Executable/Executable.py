@@ -6,7 +6,7 @@
 
 from Ganga.GPIDev.Adapters.IPrepareApp import IPrepareApp
 from Ganga.GPIDev.Adapters.IRuntimeHandler import IRuntimeHandler
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
 
 from Ganga.Utility.Config.Config import getConfig
 

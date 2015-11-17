@@ -5,7 +5,7 @@ from __future__ import absolute_import
 # $Id: LocalFile.py,v 0.1 2011-09-29 15:40:00 idzhunov Exp $
 ##########################################################################
 
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem
 
 from .IGangaFile import IGangaFile
 

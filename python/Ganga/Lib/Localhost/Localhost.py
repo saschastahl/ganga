@@ -1,5 +1,5 @@
 from Ganga.GPIDev.Adapters.IBackend import IBackend
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
 
 import Ganga.Utility.logic
 import Ganga.Utility.util

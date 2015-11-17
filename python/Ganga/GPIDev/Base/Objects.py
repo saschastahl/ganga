@@ -401,7 +401,7 @@ class Descriptor(object):
 
     def __set__(self, _obj, _val):
 
-        from Ganga.GPIDev import Schema
+        from Ganga.GPIDev.Schema import Schema
         from Ganga.GPIDev.Base.Proxy import isType, stripProxy, getName
 
         obj = stripProxy(_obj)
@@ -502,7 +502,7 @@ class ObjectMetaclass(type):
     _descriptor = Descriptor
 
     def __init__(cls, name, bases, this_dict):
-        from Ganga.GPIDev import Schema
+        from Ganga.GPIDev.Schema import Schema
         from Ganga.GPIDev.Base.Proxy import GPIProxyClassFactory, ProxyDataDescriptor, ProxyMethodDescriptor, getName
         from Ganga.Utility.Plugin import allPlugins
 
@@ -681,7 +681,7 @@ class GangaObject(Node):
     # on the deepcopy reset all non-copyable properties as defined in the
     # schema
     def __deepcopy__(self, memo=None):
-        from Ganga.GPIDev import Schema
+        from Ganga.GPIDev.Schema import Schema
         from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
 
         self._getReadAccess()

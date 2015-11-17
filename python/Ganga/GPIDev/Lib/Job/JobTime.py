@@ -1,7 +1,7 @@
 import datetime
 
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
 
 from Ganga.Utility.Config.Config import config_scope
 config_scope['datetime'] = datetime

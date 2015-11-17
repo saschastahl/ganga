@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import Ganga.Utility.logging
 from Ganga.Utility.Config.Config import getConfig
 
-import Ganga.GPIDev.Schema as Schema
+import Ganga.GPIDev.Schema.Schema as Schema
 
 from Ganga.Core.exceptions import GangaAttributeError, ProtectedAttributeError, ReadOnlyObjectError, TypeMismatchError
 

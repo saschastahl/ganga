@@ -11,7 +11,7 @@ from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
 from Ganga.GPIDev.Lib.File import File
 import os
 import shutil
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
 
 import Ganga.Utility.logging
 logger = Ganga.Utility.logging.getLogger()

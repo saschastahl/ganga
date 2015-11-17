@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem
 from fnmatch import fnmatch
 from .IGangaFile import IGangaFile
 import logging

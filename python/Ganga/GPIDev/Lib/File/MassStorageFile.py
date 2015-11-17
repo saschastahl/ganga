@@ -4,7 +4,7 @@ from __future__ import absolute_import
 #
 # $Id: MassStorageFile.py,v 0.1 2011-11-09 15:40:00 idzhunov Exp $
 ##########################################################################
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem
 
 from Ganga.Utility.Config.Config import getConfig, config_scope
 from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory

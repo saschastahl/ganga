@@ -5,7 +5,7 @@ from __future__ import absolute_import
 # $Id: LCGSEFile.py,v 0.1 2011-02-12 15:40:00 idzhunov Exp $
 ##########################################################################
 
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem
 
 from Ganga.Utility.Config.Config import getConfig
 import Ganga.Utility.logging

@@ -6,7 +6,7 @@
 from Ganga.Core.exceptions import GangaException
 from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Base.Proxy import isType, stripProxy
-from Ganga.GPIDev.Schema import Schema, Version, ComponentItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, ComponentItem
 from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
 

@@ -10,10 +10,9 @@ from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
 from Ganga.Utility.Config.Config import config_scope
 
 from Ganga.Utility.Plugin import PluginManagerError, allPlugins
-from Ganga.GPIDev.Schema import Version
 
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema import Schema, Version
+from Ganga.GPIDev.Schema.Schema import Schema, Version
 
 from .GangaRepository import SchemaVersionError
 

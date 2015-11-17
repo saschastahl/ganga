@@ -94,6 +94,7 @@ class RepositoryError(GangaException):
     def getOriginalMDError(self):
         return self.err
 
+
 class IncompleteJobSubmissionError(GangaException):
 
     def __init__(self, *args):

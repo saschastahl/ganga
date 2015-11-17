@@ -5,7 +5,7 @@ except ImportError:
     import unittest
 
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem, ComponentItem, FileItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem, ComponentItem, FileItem
 
 
 class TestGangaObject(GangaObject):
