@@ -159,31 +159,6 @@ def hostname():
 # ------------------------
 
 
-class Borg(object):
-
-    """
-    *Python Cookbook recipe 6.16*
-    Borg implementation
-    """
-    _shared_state = {}
-
-    def __new__(cls, *args, **kw):
-        obj = object.__new__(cls, *args, **kw)
-        obj.__dict__ = cls._shared_state
-        return obj
-
-    def __eq__(self, other):
-        try:
-            return self.__dict__ is other.__dict__
-        except AttributeError:
-            return False
-
-    def __hash__(self):
-        return 0
-
-# ------------------------
-
-
 def setAttributesFromDict(d, prefix=None):
     """
     *Python Cookbook recipe 6.18*
@@ -243,17 +218,6 @@ class GenericWrapper(object):
 
 # ------------------------
 
-
-class Proxy(object):
-
-    def __init__(self, obj):
-        super(Proxy, self).__init__(obj)
-        self._obj = obj
-
-    def __getattr__(self, attrib):
-        return getattr(self._obj, attrib)
-
-
 def make_binder(unbounded_method):
     def f(self, *a, **k): return unbounded_method(self._obj, *a, **k)
     return f
@@ -295,20 +259,6 @@ def importName(modulename, name):
     #    sys.stderr.write("ImportName, KeyError: %s\n" % str(err))
     #    return None
 # ------------------------
-
-
-if __name__ == "__main__":
-    import Ganga.Utility.logic as logic
-
-    assert(execute_once())
-    assert(execute_once())
-
-    if execute_once() and execute_once():
-        assert(0)
-
-    for i in range(5):
-        assert(logic.equivalent(execute_once(), i == 0))
-
 #
 #
 # $Log: not supported by cvs2svn $
