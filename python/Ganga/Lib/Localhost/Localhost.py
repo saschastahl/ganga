@@ -1,29 +1,19 @@
-from Ganga.GPIDev.Adapters.IBackend import IBackend
-from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
-
-import Ganga.Utility.logic
-import Ganga.Utility.util
-
-from Ganga.GPIDev.Lib.File import FileBuffer
-
+# System imports
 import os
 import os.path
-import re
 import errno
-
 import subprocess
-
 import datetime
 import time
 
-import re
-
-import Ganga.Utility.logging
-
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Adapters.IBackend import IBackend
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
+from Ganga.Utility.logging import getLogger
 from Ganga.Utility.Config.Config import makeConfig
 
-logger = Ganga.Utility.logging.getLogger()
-
+# Global Variables
+logger = getLogger()
 config = makeConfig('Local', 'parameters of the local backend (jobs in the background on localhost)')
 config.addOption('remove_workdir', True, 'remove automatically the local working directory when the job completed')
 config.addOption('location', None, 'The location where the workdir will be created. If None it defaults to the value of $TMPDIR')
@@ -75,13 +65,15 @@ class Localhost(IBackend):
         return self.run(job.getInputWorkspace().getPath('__jobscript__'))
 
     def run(self, scriptpath):
+        from Ganga.Utility import util
+
         try:
             process = subprocess.Popen(["python", scriptpath, 'subprocess'])
         except OSError as x:
             logger.error('cannot start a job process: %s', str(x))
             return 0
         self.wrapper_pid = process.pid
-        self.actualCE = Ganga.Utility.util.hostname()
+        self.actualCE = util.hostname()
         return 1
 
     def peek(self, filename="", command=""):
@@ -170,6 +162,8 @@ class Localhost(IBackend):
         return d
 
     def preparejob(self, jobconfig, master_input_sandbox):
+
+        from Ganga.GPIDev.Lib.File import FileBuffer
 
         job = self.getJobObject()
         # print str(job.backend_output_postprocess)
@@ -282,6 +276,7 @@ class Localhost(IBackend):
     @staticmethod
     def updateMonitoringInformation(jobs):
 
+        from Ganga.Utility import logic
         def get_exit_code(f):
             import re
             with open(f) as statusfile:
@@ -337,7 +332,7 @@ class Localhost(IBackend):
             # if the wrapper script exited with non zero this is an error
             try:
                 ws = os.waitpid(j.backend.wrapper_pid, os.WNOHANG)
-                if not Ganga.Utility.logic.implies(ws[0] != 0, ws[1] == 0):
+                if not logic.implies(ws[0] != 0, ws[1] == 0):
                     # FIXME: for some strange reason the logger DOES NOT LOG (checked in python 2.3 and 2.5)
                     # print 'logger problem', logger.name
                     # print 'logger',logger.getEffectiveLevel()
