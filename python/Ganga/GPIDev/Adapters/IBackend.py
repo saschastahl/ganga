@@ -4,19 +4,17 @@
 # $Id: IBackend.py,v 1.2 2008-10-02 10:31:05 moscicki Exp $
 ##########################################################################
 
-from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Base.Proxy import stripProxy
-from Ganga.GPIDev.Schema.Schema import Schema, Version
-
-import Ganga.Utility.logging
-
-from Ganga.Utility.logic import implies
-
+# System imports
 import os
 import itertools
-import time
 
-logger = Ganga.Utility.logging.getLogger()
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Base.Objects import GangaObject
+from Ganga.GPIDev.Schema.Schema import Schema, Version
+from Ganga.Utility.logging import getLogger
+
+# Global Variables
+logger = getLogger()
 
 class IBackend(GangaObject):
 
@@ -115,6 +113,7 @@ class IBackend(GangaObject):
         """
         from Ganga.Core import IncompleteJobSubmissionError, GangaException
         from Ganga.Utility.logging import log_user_exception
+        from Ganga.Utility.logic import implies
 
         job = self.getJobObject()
         logger.debug("SubJobConfigs: %s" % len(subjobconfigs))
@@ -413,6 +412,7 @@ class IBackend(GangaObject):
 
         ## Have to import here so it's actually defined
         from Ganga.Core import monitoring_component
+        from Ganga.GPIDev.Base.Proxy import stripProxy
 
         logger.debug("Running Monitoring for Jobs: %s" % str([j.getFQID('.') for j in jobs]))
 
