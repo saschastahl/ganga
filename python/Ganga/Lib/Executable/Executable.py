@@ -4,20 +4,18 @@
 # $Id: Executable.py,v 1.1 2008-07-17 16:40:57 moscicki Exp $
 ##########################################################################
 
+# System imports
+import os
+
+# Required Ganga imports from other modules
 from Ganga.GPIDev.Adapters.IPrepareApp import IPrepareApp
 from Ganga.GPIDev.Adapters.IRuntimeHandler import IRuntimeHandler
 from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
-
 from Ganga.Utility.Config.Config import getConfig
-
-from Ganga.GPIDev.Lib.File import File, ShareDir
-from Ganga.Core.exceptions import ApplicationConfigurationError, ApplicationPrepareError
-
 from Ganga.Utility.logging import getLogger
-logger = getLogger()
 
-import os
-from Ganga.Utility.files import expandfilename
+# Global Variables
+logger = getLogger()
 
 
 class Executable(IPrepareApp):
@@ -93,6 +91,8 @@ class Executable(IPrepareApp):
 
         See help(shareref) for further information.
         """
+        from Ganga.GPIDev.Lib.File import ShareDir
+        from Ganga.Core.exceptions import ApplicationPrepareError
 
         if (self.is_prepared is not None) and (force is not True):
             raise ApplicationPrepareError(
@@ -124,7 +124,7 @@ class Executable(IPrepareApp):
         return 1
 
     def configure(self, masterappconfig):
-        from Ganga.Core import ApplicationConfigurationError
+        from Ganga.Core.exceptions import ApplicationConfigurationError
         import os.path
 
         # do the validation of input attributes, with additional checks for exe
@@ -203,6 +203,8 @@ class RTHandler(IRuntimeHandler):
 
     def prepare(self, app, appconfig, appmasterconfig, jobmasterconfig):
         from Ganga.GPIDev.Adapters.StandardJobConfig import StandardJobConfig
+        from Ganga.GPIDev.Lib.File import File
+        from Ganga.Utility.files import expandfilename
 
         prepared_exe = app.exe
         if app.is_prepared is not None:
@@ -234,6 +236,8 @@ class LCGRTHandler(IRuntimeHandler):
 
     def prepare(self, app, appconfig, appmasterconfig, jobmasterconfig):
         from Ganga.Lib.LCG import LCGJobConfig
+        from Ganga.GPIDev.Lib.File import File
+        from Ganga.Utility.files import expandfilename
 
         prepared_exe = app.exe
         if app.is_prepared is not None:
@@ -263,6 +267,8 @@ class gLiteRTHandler(IRuntimeHandler):
 
     def prepare(self, app, appconfig, appmasterconfig, jobmasterconfig):
         from Ganga.Lib.gLite import gLiteJobConfig
+        from Ganga.GPIDev.Lib.File import File
+        from Ganga.Utility.files import expandfilename
 
         prepared_exe = app.exe
         if app.is_prepared is not None:
