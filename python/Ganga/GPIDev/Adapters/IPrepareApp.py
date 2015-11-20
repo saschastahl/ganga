@@ -4,21 +4,18 @@
 # $Id: IApplication.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
 
-from Ganga.GPIDev.Adapters.IApplication import IApplication
-from Ganga.Core.GangaRepository import getRegistry
-from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory, isType
-from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
-from Ganga.GPIDev.Lib.File import File
+# System imports
 import os
 import shutil
+
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Adapters.IApplication import IApplication
 from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
+from Ganga.Utility.logging import getLogger
+from Ganga.Utility.Config.Config import makeConfig
 
-import Ganga.Utility.logging
-logger = Ganga.Utility.logging.getLogger()
-
-
-from Ganga.Utility.Config.Config import makeConfig, getConfig
-from Ganga.Utility.files import expandfilename
+# Global Variables
+logger = getLogger()
 config = makeConfig('Preparable', 'Parameters for preparable applications')
 config.addOption('unprepare_on_copy', False, 'Unprepare a prepared application when it is copied')
 
@@ -83,6 +80,12 @@ class IPrepareApp(IApplication):
         If an IOError is raised when attempting the copy, this method returns 0\
         otherwise it returns 1.
         """
+        from Ganga.GPIDev.Base.Proxy import isType
+        from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
+        from Ganga.GPIDev.Lib.File import File
+        from Ganga.Utility.Config.Config import getConfig
+        from Ganga.Utility.files import expandfilename
+
         send_to_sharedir = []
         for name, item in self._schema.allItems():
             if item['preparable']:
@@ -187,22 +190,34 @@ class IPrepareApp(IApplication):
             return digest.hexdigest() == self.hash
 
     def incrementShareCounter(self, shared_directory_name):
+        from Ganga.Core.GangaRepository import getRegistry
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
+
         logger.debug('Incrementing shared directory reference counter')
         shareref = GPIProxyObjectFactory(getRegistry("prep").getShareRef())
         logger.debug('within incrementShareCounter, calling increase')
         shareref.increase(shared_directory_name)
 
     def decrementShareCounter(self, shared_directory_name, remove=0):
+        from Ganga.Core.GangaRepository import getRegistry
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
+
         remove = remove
         logger.debug('Decrementing shared directory reference counter')
         shareref = GPIProxyObjectFactory(getRegistry("prep").getShareRef())
         shareref.decrease(shared_directory_name, remove)
 
     def listShareDirs(self):
+        from Ganga.Core.GangaRepository import getRegistry
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
+
         shareref = GPIProxyObjectFactory(getRegistry("prep").getShareRef())
         shareref
 
     def listShareDirContents(self, shared_directory_name):
+        from Ganga.Core.GangaRepository import getRegistry
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
+
         shareref = GPIProxyObjectFactory(getRegistry("prep").getShareRef())
         shareref.ls(shared_directory_name)
 
