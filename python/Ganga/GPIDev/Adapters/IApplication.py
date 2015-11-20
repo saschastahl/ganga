@@ -4,11 +4,13 @@
 # $Id: IApplication.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
 
+# Required Ganga imports from other modules
 from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Schema.Schema import Schema, Version
+from Ganga.Utility.logging import getLogger
 
-import Ganga.Utility.logging
-logger = Ganga.Utility.logging.getLogger()
+# Global Variables
+logger = getLogger()
 
 
 class PostprocessStatusUpdate(Exception):
