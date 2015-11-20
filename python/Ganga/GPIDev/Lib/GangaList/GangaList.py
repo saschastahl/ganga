@@ -1,19 +1,19 @@
-from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Base.Filters import allComponentFilters
-from Ganga.GPIDev.Base.Proxy import addProxy, isType, getProxyAttr, stripProxy, TypeMismatchError
-from Ganga.GPIDev.Base.VPrinter import full_print, summary_print
-from Ganga.GPIDev.Schema.Schema import ComponentItem, Schema, SimpleItem, Version
-from Ganga.Utility.util import containsGangaObjects
-from Ganga.GPIDev.Base.Proxy import ReadOnlyObjectError, isType
+# System Imports
 import copy
 import sys
 
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Base.Objects import GangaObject
+from Ganga.GPIDev.Schema.Schema import ComponentItem, Schema, SimpleItem, Version
 from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger(modulename=True)
 
 
 def makeGangaList(_list, mapfunction=None, parent=None, preparable=False):
     """Should be used for makeing full gangalists"""
+    from Ganga.GPIDev.Base.Proxy import getProxyAttr, stripProxy, isType
 
     # work with a simple list always
     if isType(_list, list):
@@ -46,6 +46,8 @@ def makeGangaList(_list, mapfunction=None, parent=None, preparable=False):
 
 def stripGangaList(_list):
     """Gets the underlying list of non-proxy objects"""
+    from Ganga.GPIDev.Base.Proxy import getProxyAttr, isType
+
     result = _list
     if isType(_list, GangaList):
         result = getProxyAttr(_list, '_list')
@@ -54,6 +56,8 @@ def stripGangaList(_list):
 
 def makeGangaListByRef(_list):
     """Faster version of makeGangaList. Does not make a copy of _list but use it by reference."""
+    from Ganga.GPIDev.Base.Proxy import stripProxy
+
     result = GangaList()
     _bare_list = []
     for element in _list:
@@ -74,6 +78,7 @@ class GangaListIter(object):
         self.it = it
 
     def next(self):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         return addProxy(next(self.it))
 
     def __iter__(self):
@@ -116,6 +121,8 @@ class GangaList(GangaObject):
 
     # convenience methods
     def is_list(self, obj):
+        from Ganga.GPIDev.Base.Proxy import isType
+
         result = (obj is not None) and (isType(obj, GangaList) or isinstance(obj, list))
         return result
 
@@ -152,12 +159,17 @@ class GangaList(GangaObject):
         return makeGangaListByRef(filter(matching_filter, self._list))
 
     def _export_get(self, to_match):
+        from Ganga.GPIDev.Base.Proxy import addProxy, stripProxy
         return addProxy(self.get(stripProxy(to_match)))
 
     def strip_proxy(self, obj, filter=False):
         """Removes proxies and calls shortcut if needed"""
+        from Ganga.GPIDev.Base.Filters import allComponentFilters
+        from Ganga.GPIDev.Base.Proxy import stripProxy, isType
 
         def applyFilter(obj, item):
+            from Ganga.GPIDev.Base.Proxy import TypeMismatchError
+
             category = item['category']
             filter = allComponentFilters[category]
             filter_obj = filter(obj, item)
@@ -181,6 +193,7 @@ class GangaList(GangaObject):
         return raw_obj
 
     def strip_proxy_list(self, obj_list, filter=False):
+        from Ganga.GPIDev.Base.Proxy import getProxyAttr, isType
 
         if isType(obj_list, GangaList):
             return getProxyAttr(obj_list, '_list')
@@ -200,6 +213,8 @@ class GangaList(GangaObject):
         return result
 
     def _readonly(self):
+        from Ganga.GPIDev.Base.Proxy import isType
+
         if self._is_preparable and hasattr(self, '_parent'):
             if self._parent._category == 'applications' and hasattr(self._parent, 'is_prepared'):
                 from Ganga.GPIDev.Lib.File.File import ShareDir
@@ -208,6 +223,7 @@ class GangaList(GangaObject):
 
     def checkReadOnly(self):
         """Puts a hook in to stop mutable access to readonly jobs."""
+        from Ganga.GPIDev.Base.Proxy import ReadOnlyObjectError
         if self._readonly():
             raise ReadOnlyObjectError(
                 'object %s is readonly and attribute "%s" cannot be modified now' % (repr(self), self._name))
@@ -230,6 +246,7 @@ class GangaList(GangaObject):
         return makeGangaList(self._list.__add__(self.strip_proxy_list(obj_list, True)))
 
     def _export___add__(self, obj_list):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         self.checkReadOnly()
         return addProxy(self.__add__(obj_list))
 
@@ -274,12 +291,14 @@ class GangaList(GangaObject):
         return self._list.__getitem__(index)
 
     def _export___getitem__(self, index):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         return addProxy(self.__getitem__(index))
 
     def __getslice__(self, start, end):
         return makeGangaList(_list=self._list.__getslice__(start, end))
 
     def _export___getslice__(self, start, end):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         return addProxy(self.__getslice__(start, end))
 
     def __gt__(self, obj_list):
@@ -297,6 +316,7 @@ class GangaList(GangaObject):
         return self
 
     def _export___iadd__(self, obj_list):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         self.checkReadOnly()
         return addProxy(self.__iadd__(obj_list))
 
@@ -305,6 +325,7 @@ class GangaList(GangaObject):
         return self
 
     def _export___imul__(self, number):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         self.checkReadOnly()
         return addProxy(self.__imul__(number))
 
@@ -327,6 +348,7 @@ class GangaList(GangaObject):
         return makeGangaList(self._list.__mul__(number))
 
     def _export___mul__(self, number):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         return addProxy(self.__mul__(number))
 
     def __ne__(self, obj_list):
@@ -359,6 +381,7 @@ class GangaList(GangaObject):
         return makeGangaList(self._list.__rmul__(number))
 
     def _export___rmul__(self, number):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         return addProxy(self.__rmul__(number))
 
     def __setitem__(self, index, obj):
@@ -414,6 +437,7 @@ class GangaList(GangaObject):
         return self._list.pop(index)
 
     def _export_pop(self, index=-1):
+        from Ganga.GPIDev.Base.Proxy import addProxy
         self.checkReadOnly()
         return addProxy(self.pop(index))
 
@@ -451,6 +475,8 @@ class GangaList(GangaObject):
         return result
 
     def printSummaryTree(self, level=0, verbosity_level=0, whitespace_marker='', out=sys.stdout, selection=''):
+        from Ganga.GPIDev.Base.VPrinter import full_print, summary_print
+
         parent = self._getParent()
         schema_entry = self.findSchemaParentSchemaEntry(parent)
 
@@ -482,6 +508,8 @@ class GangaList(GangaObject):
 
     def toString(self):
         """Returns a simple str of the _list."""
+        from Ganga.GPIDev.Base.Proxy import stripProxy, isType
+
         returnable_str = "["
         for element in self._list:
             if isType( element, GangaObject):
