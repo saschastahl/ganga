@@ -3,15 +3,11 @@
 #
 # $Id: IMerger.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
+
+# Required Ganga imports from other modules
 from Ganga.Core.exceptions import GangaException
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Base.Proxy import isType, stripProxy
 from Ganga.GPIDev.Schema.Schema import Schema, Version, ComponentItem
-from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
-from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
-
-import Ganga.GPI
-
 
 class PostProcessException(GangaException):
 
@@ -62,6 +58,9 @@ class MultiPostProcessor(IPostProcessor):
         super(MultiPostProcessor, self).__init__()
 
     def __construct__(self, value):
+        from Ganga.GPIDev.Base.Proxy import isType, stripProxy
+        from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
+
         if isinstance(value, list) or isinstance(value, GangaList):
             for process in value:
                 self.addProcess(process)
@@ -74,6 +73,7 @@ class MultiPostProcessor(IPostProcessor):
             self.process_objects, key=lambda process: process.order)
 
     def __str__(self):
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
         return str(GPIProxyObjectFactory(self.process_objects))
 
     def append(self, value):
@@ -82,15 +82,19 @@ class MultiPostProcessor(IPostProcessor):
             self.process_objects, key=lambda process: process.order)
 
     def remove(self, value):
+        from Ganga.GPIDev.Base.Proxy import isType
+
         for process in self.process_objects:
             if (isType(value, type(process)) == True):
                 self.process_objects.remove(process)
                 break
 
     def __get__(self):
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
         return GPIProxyObjectFactory(self.process_objects)
 
     def __getitem__(self, i):
+        from Ganga.GPIDev.Base.Proxy import GPIProxyObjectFactory
         return GPIProxyObjectFactory(self.process_objects[i])
 
     def execute(self, job, newstatus, **options):
@@ -135,8 +139,8 @@ def postprocessor_filter(value, item):
     from Ganga.GPIDev.Lib.Job.Job import Job
     from Ganga.GPIDev.Lib.Tasks.ITransform import ITransform
     from Ganga.GPIDev.Base.Objects import ObjectMetaclass
-
-    #from Ganga.GPIDev.Base.Proxy import stripProxy
+    from Ganga.GPIDev.Base.Proxy import stripProxy
+    import Ganga.GPI
 
     valid_jobtypes = [stripProxy(i)._schema.datadict['postprocessors'] for i in Ganga.GPI.__dict__.values()
                       if isinstance(stripProxy(i), ObjectMetaclass)
