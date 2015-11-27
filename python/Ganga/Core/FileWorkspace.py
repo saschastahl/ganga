@@ -11,14 +11,15 @@ input  and  output sandboxes.  This  allows  to  handle files  in  the
 FileWorkspace in a location-independent way.
 """
 
-import Ganga.Utility.logging
-
+# System imports
 import os
-import time
 
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
 from Ganga.Utility.files import expandfilename, chmod_executable
 
-logger = Ganga.Utility.logging.getLogger(modulename=1)
+# Global Variables
+logger = getLogger(modulename=1)
 
 class FileWorkspace(object):
 
@@ -197,7 +198,8 @@ class FileWorkspace(object):
 
 
 def gettop():
-    c = Ganga.Utility.Config.getConfig('Configuration')
+    from Ganga.Utility.Config.Config import getConfig
+    c = getConfig('Configuration')
     return os.path.join(c['gangadir'], 'workspace', c['user'], c['repositorytype'])
 
 

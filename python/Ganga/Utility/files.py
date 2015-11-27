@@ -8,9 +8,8 @@
 Helper functions for operations on files.
 """
 
+# System imports
 import os.path
-import stat
-
 
 def expandfilename(filename):
     "expand a path or filename in a standard way so that it may contain ~ and ${VAR} strings"
