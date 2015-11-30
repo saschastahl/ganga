@@ -12,13 +12,12 @@
 # if a root object has a status field and some load error occurs, it will
 # be set to "incomplete"
 
-import Ganga.Utility.logging
-
-from Ganga.Utility.Plugin import allPlugins
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
 from Ganga.Core.exceptions import GangaException
-from Ganga.GPIDev.Base.Proxy import getName
 
-logger = Ganga.Utility.logging.getLogger()
+# Global Variables
+logger = getLogger()
 
 # Error raised on schema version error
 
@@ -42,6 +41,8 @@ class InaccessibleObjectError(GangaException):
         self.orig = orig
 
     def __str__(self):
+        from Ganga.GPIDev.Base.Proxy import getName
+        
         if str(self.orig).find('comments') > -1:
             return "Please restart Ganga in order to reload the object"
         else:
@@ -193,6 +194,8 @@ class GangaRepository(object):
         """Internal helper: adds an empty GangaObject of the given class to the repository.
         Raise RepositoryError
         Raise PluginManagerError if the class name is not found"""
+        from Ganga.Utility.Plugin import allPlugins
+
         if (category, classname) not in self._found_classes:
             cls = allPlugins.find(category, classname)
             self._found_classes[(category, classname)] = cls
