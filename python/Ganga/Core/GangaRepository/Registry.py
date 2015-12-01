@@ -1,14 +1,14 @@
-import Ganga.Utility.logging
-
-from Ganga.Core.exceptions import GangaException
-from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError
-
+# System Imports
 import time
 import threading
 
-from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
+from Ganga.Core.exceptions import GangaException
 
-logger = Ganga.Utility.logging.getLogger()
+# Global Variables
+logger = getLogger()
+
 
 class RegistryError(GangaException):
 
@@ -228,6 +228,8 @@ class Registry(object):
     def find(self, _obj):
         """Returns the id of the given object in this registry, or 
         Raise ObjectNotInRegistryError if the Object is not found"""
+        from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
+
         obj = stripProxy(_obj)
         try:
             if hasattr(obj, '_registry_id'):
@@ -367,6 +369,7 @@ class Registry(object):
         Raise RepositoryError
         Raise RegistryAccessError
         Raise RegistryLockError"""
+        from Ganga.GPIDev.Base.Proxy import isType
 
         if objs is None:
             objs = []
@@ -403,6 +406,8 @@ class Registry(object):
         sub-obj is the object the read access is actually desired (ignored at the moment)
         Raise RegistryAccessError
         Raise RegistryKeyError"""
+        from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError
+
         #logger.debug("Reg %s _read_access(%s)" % (self.name, str(obj)))
         if not obj._data or "_registry_refresh" in obj.__dict__:
             if not self._started:
@@ -431,6 +436,9 @@ class Registry(object):
         Raise RegistryAccessError
         Raise RegistryLockError
         Raise ObjectNotInRegistryError (via self.find())"""
+
+        from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError
+        from Ganga.GPIDev.Base.Proxy import stripProxy
 
         obj = stripProxy(_obj)
 
