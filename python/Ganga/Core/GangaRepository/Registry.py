@@ -1,7 +1,7 @@
 import Ganga.Utility.logging
 
 from Ganga.Core.exceptions import GangaException
-from Ganga.Core.GangaRepository import InaccessibleObjectError
+from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError
 
 import time
 import threading

@@ -1,13 +1,16 @@
-from __future__ import absolute_import
+# System imports
 import glob
 import pickle
 import os
 import sys
 import copy
+
+# Required Ganga imports from other modules
 from Ganga.GPIDev.Persistency import load, stripped_export
-from Ganga.Core.GangaRepository import allRegistries, RepositoryError
-from .GangaRepository import GangaRepository
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
 from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger()
 
 
@@ -23,6 +26,8 @@ class GangaRepositoryImmutableTransient(GangaRepository):
         self.registry = registry
 
     def startup(self):
+        from Ganga.Core.GangaRepository.GangaRepository import allRegistries
+
         def _readonly(): return True
 
         # this is needed as the default registry that would be added to with Jebtemplates is the
@@ -81,6 +86,8 @@ class GangaRepositoryImmutableTransient(GangaRepository):
         pass
 
     def add(self, objs, force_ids=None):
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+
         ids = []
 
         def _readonly(): return True

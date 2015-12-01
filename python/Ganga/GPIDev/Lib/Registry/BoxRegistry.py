@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
 from Ganga.GPIDev.Lib.GangaList.GangaList import makeGangaList
 
-from Ganga.Core import GangaException
+from Ganga.Core.exceptions import GangaException
 
 from Ganga.GPIDev.Base.Proxy import stripProxy
 

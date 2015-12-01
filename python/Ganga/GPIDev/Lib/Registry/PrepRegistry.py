@@ -2,8 +2,8 @@ import os
 import shutil
 import time
 from Ganga.Core.GangaRepository.Registry import Registry
-from Ganga.GPIDev.Base import GangaObject
-from Ganga.GPIDev.Schema import Schema, SimpleItem, Version
+from Ganga.GPIDev.Base.Objects import GangaObject
+from Ganga.GPIDev.Schema.Schema import Schema, SimpleItem, Version
 from Ganga.GPIDev.Base.Proxy import stripProxy
 import Ganga.Utility.Config
 logger = Ganga.Utility.logging.getLogger()
