@@ -3,37 +3,26 @@
 # * lazy loading
 # * locking
 
-from Ganga.Core.GangaRepository import GangaRepository, RepositoryError, InaccessibleObjectError
-from Ganga.Utility.Plugin import PluginManagerError
+# System imports
 import os
 import os.path
 import time
 import errno
 
-from Ganga.Core.GangaRepository.SessionLock import SessionLockManager
+# Required Ganga imports from other modules
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
+from Ganga.Utility.logging import getLogger
 
-import Ganga.Utility.logging
-
-from Ganga.Core.GangaRepository.PickleStreamer import to_file as pickle_to_file
-from Ganga.Core.GangaRepository.PickleStreamer import from_file as pickle_from_file
-
-from Ganga.Core.GangaRepository.VStreamer import to_file as xml_to_file
-from Ganga.Core.GangaRepository.VStreamer import from_file as xml_from_file
-from Ganga.Core.GangaRepository.VStreamer import XMLFileError
-
-from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
-from Ganga.GPIDev.Base.Objects import Node
-from Ganga.Core.GangaRepository import SubJobXMLList
-
-from Ganga.GPIDev.Base.Proxy import isType, stripProxy, getName
-
-logger = Ganga.Utility.logging.getLogger()
-
+# Global Variables
+logger = getLogger()
 printed_explanation = False
 
 
 def safe_save(fn, _obj, to_file, ignore_subs=''):
     """Writes a file safely, raises IOError on error"""
+    from Ganga.Core.GangaRepository.VStreamer import XMLFileError
+    from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+
     obj = stripProxy(_obj)
     if hasattr(obj, 'application') and hasattr(obj.application, 'hash') and obj.application.hash is not None:
         if not obj.application.calc_hash(verify=True):
@@ -171,6 +160,13 @@ class GangaRepositoryLocal(GangaRepository):
     def startup(self):
         """ Starts a repository and reads in a directory structure.
         Raise RepositoryError"""
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+        from Ganga.Core.GangaRepository.SessionLock import SessionLockManager
+        from Ganga.Core.GangaRepository.PickleStreamer import to_file as pickle_to_file
+        from Ganga.Core.GangaRepository.PickleStreamer import from_file as pickle_from_file
+        from Ganga.Core.GangaRepository.VStreamer import to_file as xml_to_file
+        from Ganga.Core.GangaRepository.VStreamer import from_file as xml_from_file
+
         self._load_timestamp = {}
 
         # New Master index to speed up loading of many, MANY files
@@ -224,6 +220,9 @@ class GangaRepositoryLocal(GangaRepository):
             Raise IOError on access or unpickling error 
             Raise OSError on stat error
             Raise PluginManagerError if the class name is not found"""
+        from Ganga.Core.GangaRepository.PickleStreamer import from_file as pickle_from_file
+        from Ganga.GPIDev.Base.Proxy import getName
+
         #logger.debug("Loading index %s" % id)
         fn = self.get_idxfn(id)
         # index timestamp changed
@@ -256,6 +255,9 @@ class GangaRepositoryLocal(GangaRepository):
     def index_write(self, id):
         """ write an index file for this object (must be locked).
             Should not raise any Errors """
+        from Ganga.Core.GangaRepository.PickleStreamer import to_file as pickle_to_file
+        from Ganga.GPIDev.Base.Proxy import getName
+
         obj = self.objects[id]
         try:
             ifn = self.get_idxfn(id)
@@ -271,6 +273,8 @@ class GangaRepositoryLocal(GangaRepository):
         """Get dictionary of possible objects in the Repository: True means index is present,
             False if not present
         Raise RepositoryError"""
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+
         try:
             obj_chunks = [d for d in os.listdir(self.root) if d.endswith("xxx") and d[:-3].isdigit()]
         except OSError as err:
@@ -299,6 +303,8 @@ class GangaRepositoryLocal(GangaRepository):
         return objs
 
     def _read_master_cache(self):
+        from Ganga.Core.GangaRepository.PickleStreamer import from_file as pickle_from_file
+
         try:
             _master_idx = os.path.join(self.root, 'master.idx')
             if os.path.isfile(_master_idx):
@@ -329,6 +335,8 @@ class GangaRepositoryLocal(GangaRepository):
         return
 
     def _write_master_cache(self, shutdown=False):
+        from Ganga.Core.GangaRepository.PickleStreamer import to_file as pickle_to_file
+
         logger.debug("Updating master index")
         try:
             _master_idx = os.path.join(self.root, 'master.idx')
@@ -393,6 +401,9 @@ class GangaRepositoryLocal(GangaRepository):
     def update_index(self, id=None, verbose=False, firstRun=False):
         """ Update the list of available objects
         Raise RepositoryError"""
+        from Ganga.Utility.Plugin import PluginManagerError
+        from Ganga.GPIDev.Base.Proxy import getName
+
         # First locate and load the index files
         logger.debug("updating index...")
         objs = self.get_index_listing()
@@ -500,6 +511,8 @@ class GangaRepositoryLocal(GangaRepository):
     def add(self, objs, force_ids=None):
         """ Add the given objects to the repository, forcing the IDs if told to.
         Raise RepositoryError"""
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+
         if not force_ids is None:  # assume the ids are already locked by Registry
             if not len(objs) == len(force_ids):
                 raise RepositoryError(
@@ -525,6 +538,8 @@ class GangaRepositoryLocal(GangaRepository):
         return ids
 
     def _safe_flush_xml(self, id):
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+        from Ganga.GPIDev.Base.Proxy import isType
 
         fn = self.get_fn(id)
         obj = self.objects[id]
@@ -579,6 +594,9 @@ class GangaRepositoryLocal(GangaRepository):
             raise RepositoryError(self, "Cannot flush an Empty object for ID: %s" % str(id))
 
     def flush(self, ids):
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+        from Ganga.Core.GangaRepository.VStreamer import XMLFileError
+
         logger.debug("Flushing: %s" % ids)
         #import traceback
         # traceback.print_stack()
@@ -610,6 +628,10 @@ class GangaRepositoryLocal(GangaRepository):
         return node_count
 
     def _actually_load_xml(self, fobj, fn, id, load_backup):
+        from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
+        from Ganga.GPIDev.Base.Objects import Node
+        from Ganga.Core.GangaRepository import SubJobXMLList
+        from Ganga.GPIDev.Base.Proxy import isType
 
         must_load = (not id in self.objects) or (self.objects[id]._data is None)
         tmpobj = None
@@ -675,6 +697,7 @@ class GangaRepositoryLocal(GangaRepository):
             logger.debug("Didn't Load Job ID: %s" % str(id))
 
     def _open_xml_file(self, fn):
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
 
         fobj = None
 
@@ -707,6 +730,9 @@ class GangaRepositoryLocal(GangaRepository):
         return fobj
 
     def load(self, ids, load_backup=False):
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError, InaccessibleObjectError
+        from Ganga.Core.GangaRepository.VStreamer import XMLFileError
+        from Ganga.GPIDev.Base.Proxy import isType
 
         # print "load: %s " % str(ids)
         #import traceback
