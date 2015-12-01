@@ -1,22 +1,23 @@
-from __future__ import absolute_import
 # Note: Following stuff must be considered in a GangaRepository:
 #
 # * lazy loading
 # * locking
 
-from .GangaRepository import GangaRepository, RepositoryError
+# System imports
+# TODO: Moved sqlite away from here as it wasn't avilable by default - add to requirements?
 import os
 import os.path
-
-import sqlite
-
 try:
     import cPickle as pickle
 except:
     import pickle
 
-import Ganga.Utility.logging
-logger = Ganga.Utility.logging.getLogger()
+# Required Ganga imports from other modules
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
+from Ganga.Utility.logging import getLogger
+
+# Global Variables
+logger = getLogger()
 
 
 class GangaRepositorySQLite(GangaRepository):
@@ -25,6 +26,7 @@ class GangaRepositorySQLite(GangaRepository):
 
     def startup(self):
         """ Starts an repository and reads in a directory structure."""
+        import sqlite
         self._load_timestamp = {}
         self._cache_load_timestamp = {}
         self.known_bad_ids = []
@@ -75,6 +77,8 @@ class GangaRepositorySQLite(GangaRepository):
     def add(self, objs, force_ids=None):
         """ Add the given objects to the repository, forcing the IDs if told to.
         Raise RepositoryError"""
+        from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+
         ids = []
         # assume the ids are already locked by Registry
         if not force_ids is None:
