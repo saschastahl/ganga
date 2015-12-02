@@ -1,23 +1,14 @@
+# System Imports
 from __future__ import print_function
-from __future__ import absolute_import
-from Ganga.Core.exceptions import GangaException
-from Ganga.Utility.logging import getLogger
-from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
-
-from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
-
-# config_scope is namespace used for evaluating simple objects (e.g. File)
-from Ganga.Utility.Config.Config import config_scope
-
-from Ganga.Utility.Plugin import PluginManagerError, allPlugins
-
-from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema.Schema import Schema, Version
-
-from .GangaRepository import SchemaVersionError
-
 import xml.sax.saxutils
 
+# Required Ganga imports from other modules
+from Ganga.Core.exceptions import GangaException
+from Ganga.GPIDev.Base.Objects import GangaObject
+from Ganga.GPIDev.Schema.Schema import Schema, Version
+from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger()
 
 ##########################################################################
@@ -44,7 +35,10 @@ class XMLFileError(GangaException):
             err = ''
         return "XMLFileError: %s %s" % (self.message, err)
 
+
 def to_file(j, f=None, ignore_subs=''):
+    from Ganga.GPIDev.Base.Proxy import stripProxy
+
     try:
         vstreamer = VStreamer(out=f, selection=ignore_subs)
         vstreamer.begin_root()
@@ -98,6 +92,8 @@ def unescape(s):
 
 
 def fastXML(obj, indent='', ignore_subs=''):
+    from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+
     if hasattr(obj, "__iter__") and not hasattr(obj, "iteritems"):
         sl = ["\n", indent, "<sequence>", "\n"]
         for so in obj:
@@ -166,6 +162,7 @@ class VStreamer(object):
         return
 
     def print_value(self, x):
+        from Ganga.GPIDev.Base.Proxy import stripProxy
         print('\n', self.indent(), '<value>%s</value>' % escape(repr(stripProxy(x))), file=self.out)
 
     def showAttribute(self, node, name):
@@ -197,6 +194,9 @@ class VStreamer(object):
         self.simpleAttribute(node, name, value, sequence)
 
     def acceptOptional(self, s):
+        from Ganga.GPIDev.Base.Proxy import stripProxy, isType
+        from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
+
         self.level += 1
         if s is None:
             print(self.indent(), '<value>None</value>', file=self.out)
@@ -266,6 +266,8 @@ class Loader(object):
         """ Parse and load object from string s using internal XML parser (expat).
         """
         import xml.parsers.expat
+        from Ganga.Utility.Plugin import PluginManagerError, allPlugins
+        from Ganga.Core.GangaRepository.GangaRepository import SchemaVersionError
 
         # 3 handler functions
         def start_element(name, attrs):
@@ -326,6 +328,9 @@ class Loader(object):
                 self.sequence_start.append(len(self.stack))
 
         def end_element(name):
+            from Ganga.GPIDev.Lib.GangaList.GangaList import makeGangaListByRef
+            from Ganga.Utility.Config.Config import config_scope
+
             #logger.debug('End element: name=%s', name)
 
             # if higher level element had error, ignore the corresponding part
