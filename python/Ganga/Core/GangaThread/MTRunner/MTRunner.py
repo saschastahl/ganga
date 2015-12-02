@@ -1,13 +1,14 @@
 #!/usr/bin/env python
+
+# System imports
 from __future__ import absolute_import
 import time
 import traceback
 from threading import Lock
 from Queue import Empty
-from .Algorithm import AlgorithmError
+
+# Required Ganga imports from other modules
 from Ganga.Core.GangaThread.GangaThread import GangaThread
-from Ganga.Core.GangaThread.MTRunner.Data import DuplicateDataItemError
-from Ganga.Utility.logging import getLogger
 
 
 class MTRunnerError(Exception):
@@ -27,6 +28,8 @@ class GangaWorkAgent(GangaThread):
         self._runner = runnerObj
 
     def run(self):
+        from Ganga.Core.GangaThread.MTRunner.Algorithm import AlgorithmError
+        from Ganga.Utility.logging import getLogger
 
         logger = getLogger()
 
@@ -102,6 +105,7 @@ class MTRunner(object):
         @param algorithm is an Algorithm object defining how to process on the data
         @param data is an Data object defining what to be processed by the algorithm
         """
+        from Ganga.Utility.logging import getLogger
 
         if (not algorithm) or (not data):
             raise MTRunnerError('algorithm and data must not be None')
@@ -132,6 +136,8 @@ class MTRunner(object):
         """
         adds a new data item into the internal queue
         """
+        from Ganga.Core.GangaThread.MTRunner.Data import DuplicateDataItemError
+
         try:
             self.data.addItem(item)
         except DuplicateDataItemError as e:
