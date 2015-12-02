@@ -1,13 +1,17 @@
-from __future__ import absolute_import
+# System imports
 from threading import Thread
-from .GangaThreadPool import GangaThreadPool
+
+# Required Ganga imports from other modules
 from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger()
 
 
 class GangaThread(Thread):
 
     def __init__(self, name, auto_register=True, critical=True, **kwds):
+        from Ganga.Core.GangaThread.GangaThreadPool import GangaThreadPool
 
         self.gangaName = str(name)  # want to copy actual not by ref!
         name = 'GANGA_Update_Thread_%s' % name
@@ -45,7 +49,9 @@ class GangaThread(Thread):
             self.__should_stop_flag = True
 
     def unregister(self):
+        from Ganga.Core.GangaThread.GangaThreadPool import GangaThreadPool
         GangaThreadPool.getInstance().delServiceThread(self)
 
     def register(self):
+        from Ganga.Core.GangaThread.GangaThreadPool import GangaThreadPool
         GangaThreadPool.getInstance().addServiceThread(self)

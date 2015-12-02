@@ -1,6 +1,10 @@
-from Ganga.Utility.logging import getLogger
+# System Imports
 import time
 
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger('GangaThread')
 
 
