@@ -5,7 +5,7 @@ import collections
 from Ganga.Core.GangaThread import GangaThread
 from Ganga.Utility.execute import execute
 from Ganga.Utility.logging import getLogger
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig
 
 from collections import namedtuple
 

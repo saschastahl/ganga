@@ -1,10 +1,13 @@
+# System imports
 import collections
+
+# Required Ganga imports from other modules
 from Ganga.Core.GangaThread.WorkerThreads.WorkerThreadPool import WorkerThreadPool
 from Ganga.Utility.Config import getConfig
 from Ganga.Utility.logging import getLogger
-from Ganga.Utility.ColourText import getColour
-logger = getLogger()
 
+# Global Variables
+logger = getLogger()
 _user_threadpool = None
 _monitoring_threadpool = None
 
@@ -59,6 +62,8 @@ class ThreadPoolQueueMonitor(object):
 
     def _display(self):
         '''Return the current status of the thread pools and queues.'''
+        from Ganga.Utility.ColourText import getColour
+
         output = ''
         output += '{0:^67} | {1:^50}\n'.format('Ganga user threads:', 'Ganga monitoring threads:')
         output += '{0:^67} | {1:^50}\n'.format('------------------', '------------------------')
