@@ -4,8 +4,8 @@
 # to run locking tests (run several instances in the same directory, from
 # different machines)
 
+# System imports
 from __future__ import print_function
-
 import os
 import time
 import errno
@@ -19,37 +19,14 @@ try:
 except ImportError:
     import pickle
 
-import Ganga.Utility.logging
-
+# Required Ganga imports from other modules
+from Ganga.Core.GangaThread import GangaThread
+from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+from Ganga.Utility.logging import getLogger
 from Ganga.Utility.Config.Config import getConfig, ConfigError
-from Ganga.GPIDev.Base.Proxy import getName
 
-try:
-    from Ganga.Core.GangaThread import GangaThread
-    from Ganga.Core.GangaRepository import RepositoryError
-except ImportError:
-    from threading import Thread
-
-    print("IMPORT ERROR SHOULD NOT OCCUR IN PRODUCTION CODE!!!!!!!!!!!!!!!!!!!!!!")
-    
-
-    class GangaThread(Thread):
-    
-        def __init__(self, name):
-            self.name = name
-            super(GangaThread, self).__init__()
-
-        def should_stop(self):
-            return False
-
-
-    class RepositoryError(Exception):
-        pass
-
-
-logger = Ganga.Utility.logging.getLogger()
-
-
+# Global Variables
+logger = getLogger()
 session_lock_last = 0
 session_expiration_timeout = 0
 try:
@@ -148,6 +125,8 @@ class SessionLockRefresher(GangaThread):
             self.unregister()
 
     def checkAndReap(self):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         # TODO: Check for services active/inactive
         try:
             for index in range(len(self.fns)):
@@ -161,6 +140,8 @@ class SessionLockRefresher(GangaThread):
             logger.warning( "Internal exception in session lock thread: %s %s" % (getName(x), str(x)))
 
     def updateNow(self):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         try:
             for index in range(len(self.fns)):
                 now = self.updateLocks(index)
@@ -547,6 +528,8 @@ class SessionLockManager(object):
             The global lock MUST be held for this function to work, although on NFS additional
             locking is done
             Raises RepositoryError if severe access problems occur (corruption otherwise!) """
+        from Ganga.GPIDev.Base.Proxy import getName
+
         try:
             # This can fail (thats OK, file deleted in the meantime)
             fd = self.delay_session_open(fn)
@@ -787,6 +770,8 @@ class SessionLockManager(object):
             self.global_lock_release()
 
     def check(self):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         self.global_lock_acquire()
         try:
             f = open(self.cntfn)
@@ -924,30 +909,3 @@ class SessionLockManager(object):
             logger.debug( "Session Info Exception: %s" % str(err))
             return session
 
-
-def test1():
-    slm = SessionLockManager("locktest", "tester")
-    while True:
-        logger.debug(
-            "lock  --- {0}".format(slm.lock_ids(random.sample(xrange(100), 3))))
-        logger.debug(
-            "unlock--- {0}".format(slm.release_ids(random.sample(xrange(100), 3))))
-        slm.check()
-
-
-def test2():
-    slm = SessionLockManager("locktest", "tester")
-    while True:
-        n = random.randint(1, 9)
-        logger.debug("get {0} ids --- {1}".format(n, slm.make_new_ids(n)))
-        slm.check()
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) == 1:
-        logger.debug("Usage: python SessionLock.py {1|2}")
-        sys.exit(-1)
-    if sys.argv[1] == "1":
-        test1()
-    elif sys.argv[1] == "2":
-        test2()
