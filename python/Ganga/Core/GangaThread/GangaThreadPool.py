@@ -41,7 +41,7 @@ class GangaThreadPool(object):
     def addServiceThread(self, t):
         logger.debug('service thread "%s" added to the GangaThreadPool', t.getName())
         ##   HERE TO AVOID AN IMPORT ERROR!
-        from Ganga.Core.GangaThread.MTRunner import DuplicateDataItemError
+        from Ganga.Core.GangaThread.MTRunner.MTRunner import DuplicateDataItemError
         try:
             self.__threads.append(t)
         except DuplicateDataItemError as e:
