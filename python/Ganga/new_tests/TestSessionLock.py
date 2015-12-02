@@ -5,7 +5,7 @@ except ImportError:
     import unittest
 
 
-class TestConfig(unittest.TestCase):
+class TestSessionLock(unittest.TestCase):
     """
     Test the SessionLockRefresher module
     """

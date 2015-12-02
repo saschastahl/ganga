@@ -1,11 +1,13 @@
-# This, although inheriting from GangaList should be here as the class has to know about on-disk structure of the XML repo
+# System imports
+import errno
 
-from Ganga.GPIDev.Schema.Schema import Schema, SimpleItem, Version
+# Required Ganga imports from other modules
+# This, although inheriting from GangaList should be here as the class has to know about on-disk structure of the XML repo
+from Ganga.GPIDev.Schema.Schema import Schema, Version
 from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.Utility.logging import getLogger
-from Ganga.Core.GangaRepository.VStreamer import from_file, to_file
-from Ganga.Core.exceptions import GangaException
-import errno
+
+# Global Variables
 logger = getLogger()
 
 ##FIXME There has to be a better way of doing this?
@@ -40,6 +42,7 @@ class SubJobXMLList(GangaObject):
     _schema = Schema(Version(1, 0), {}) 
 
     def __init__(self, jobDirectory='', registry=None, dataFileName='data', load_backup=False ):
+        from Ganga.Core.GangaRepository.VStreamer import from_file, to_file
 
         super(SubJobXMLList, self).__init__()
 
@@ -194,6 +197,8 @@ class SubJobXMLList(GangaObject):
         return sj_file
 
     def __getitem__(self, index):
+        from Ganga.Core.exceptions import GangaException
+        from Ganga.Core.GangaRepository.VStreamer import from_file
 
         logger.debug("Requesting: %s" % str(index))
 
