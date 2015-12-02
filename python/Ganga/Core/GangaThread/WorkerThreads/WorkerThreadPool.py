@@ -1,14 +1,16 @@
 #!/usr/bin/env python
+
+# System Imports
 import Queue
 import traceback
 import collections
-from Ganga.Core.GangaThread import GangaThread
-from Ganga.Utility.execute import execute
-from Ganga.Utility.logging import getLogger
-from Ganga.Utility.Config.Config import getConfig
-
 from collections import namedtuple
 
+# Required Ganga imports from other modules
+from Ganga.Utility.Config.Config import getConfig
+from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger()
 QueueElement = namedtuple('QueueElement',  ['priority', 'command_input', 'callback_func', 'fallback_func', 'name'])
 CommandInput = namedtuple('CommandInput',  ['command', 'timeout', 'env', 'cwd', 'shell', 'python_setup', 'eval_includes', 'update_env'])
@@ -38,6 +40,8 @@ class WorkerThreadPool(object):
         self._shutdown = False
 
     def __init_worker_threads(self, num_worker_threads, worker_thread_prefix):
+        from Ganga.Core.GangaThread import GangaThread
+
         if len(self.__worker_threads) > 0:
             logger.warning("Threads already started!")
             for i in self.__worker_threads:
@@ -67,6 +71,7 @@ class WorkerThreadPool(object):
         # <type 'exceptions.AttributeError'>: 'NoneType' object has no attribute 'Empty'
         # im hoping that importing within the thread will avoid this.
         import Queue
+        from Ganga.Utility.execute import execute
 
         oldname = thread.gangaName
 
