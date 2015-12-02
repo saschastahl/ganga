@@ -20,7 +20,7 @@ except ImportError:
     import pickle
 
 # Required Ganga imports from other modules
-from Ganga.Core.GangaThread import GangaThread
+from Ganga.Core.GangaThread.GangaThread import GangaThread
 from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
 from Ganga.Utility.logging import getLogger
 from Ganga.Utility.Config.Config import getConfig, ConfigError
