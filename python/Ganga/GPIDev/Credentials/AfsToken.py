@@ -94,7 +94,7 @@ import time
 
 from Ganga.GPIDev.Base.Proxy import isType
 from Ganga.GPIDev.Credentials.ICredential import ICommandSet, ICredential, registerCommandSet
-from Ganga.GPIDev.Schema import SimpleItem
+from Ganga.GPIDev.Schema.Schema import SimpleItem
 from Ganga.Runtime import Repository_runtime
 from Ganga.Utility.logging import getLogger
 

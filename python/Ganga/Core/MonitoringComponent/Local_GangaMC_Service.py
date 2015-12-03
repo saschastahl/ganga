@@ -1,26 +1,17 @@
+# System imports
 import Queue
 import threading
 import time
 
-from Ganga.Core.GangaThread import GangaThread
-from Ganga.Core.GangaRepository import RegistryKeyError, RegistryLockError
-
+# Required Ganga imports from other modules
+from Ganga.Core.GangaThread.GangaThread import GangaThread
 from Ganga.Utility.threads import SynchronisedObject
+from Ganga.Utility.Config.Config import makeConfig
+from Ganga.Utility.logging import getLogger
 
-import Ganga.GPIDev.Credentials as Credentials
-from Ganga.Core.InternalServices import Coordinator
-
-from Ganga.GPIDev.Base.Proxy import isType, stripProxy, getName
-
-# Setup logging ---------------
-import Ganga.Utility.logging
-
-from Ganga.Core import BackendError
-import Ganga.Utility.Config
-
-log = Ganga.Utility.logging.getLogger()
-
-config = Ganga.Utility.Config.makeConfig('PollThread', 'background job status monitoring and output retrieval')
+# Global Variables
+log = getLogger()
+config = makeConfig('PollThread', 'background job status monitoring and output retrieval')
 
 # some defaults
 config.addOption('repeat_messages', False, 'if 0 then log only once the errors for a given backend and do not repeat them anymore')
@@ -45,19 +36,18 @@ config.addOption('Panda', 50, 'Poll rate for Panda backend.')
 config.addOption('creds_poll_rate', 30, "The frequency in seconds for credentials checker")
 config.addOption('diskspace_poll_rate', 30, "The frequency in seconds for free disk checker")
 config.addOption('DiskSpaceChecker', "", "disk space checking callback. This function should return False when there is no disk space available, True otherwise")
-
-
 config.addOption('max_shutdown_retries', 5, 'OBSOLETE: this option has no effect anymore')
-
 
 THREAD_POOL_SIZE = config['update_thread_pool_size']
 Qin = Queue.Queue()
 ThreadPool = []
+
 # number of threads waiting for actions in Qin
 tpFreeThreads = 0
 
 # The JobAction class encapsulates a function, its arguments and its post result action
 # based on what is defined as a successful run of the function.
+
 
 def getFuncName(func):
     if hasattr(func, '__name__'):
@@ -95,6 +85,8 @@ class MonitoringWorkerThread(GangaThread):
     # This function takes a JobAction object from the Qin queue,
     # executes the embedded function and runs post result actions.
     def _execUpdateAction(self):
+        from Ganga.GPIDev.Base.Proxy import isType
+
         global tpFreeThreads
         # DEBUGGING THREADS
         # import sys
@@ -187,6 +179,8 @@ def _purge_actions_queue():
     Purge Qin: consume the current queued actions 
     Note: the producer (i.e JobRegistry_Monitor) should be stopped before the method is called
     """
+    from Ganga.GPIDev.Base.Proxy import isType
+
     # purge the queue
     for i in range(len(Qin.queue)):
         try:
@@ -229,6 +223,8 @@ class UpdateDict(object):
         self.table = {}
 
     def addEntry(self, backendObj, backendCheckingFunction, jobList, timeoutMax=None):
+        from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+
         if not jobList:
             return
         if timeoutMax is None:
@@ -374,6 +370,8 @@ def get_jobs_in_bunches(jobList_fromset, blocks_of_size=10, stripProxies=True):
     whilst not splitting jobs containing subjobs
     Also strip the jobs of their proxies...
     """
+    from Ganga.GPIDev.Base.Proxy import stripProxy
+
     list_of_bunches = []
     temp_list = []
 
@@ -410,6 +408,9 @@ class JobRegistry_Monitor(GangaThread):
     minPollRate = 1.0
 
     def __init__(self, registry):
+        import Ganga.GPIDev.Credentials as Credentials
+        from Ganga.GPIDev.Base.Proxy import getName
+
         GangaThread.__init__(self, name="JobRegistry_Monitor")
         log.debug("Constructing JobRegistry_Monitor")
         self.setDaemon(True)
@@ -575,6 +576,8 @@ class JobRegistry_Monitor(GangaThread):
         Note:         
           This method is meant to be used in Ganga scripts to request monitoring on demand. 
         """
+        from Ganga.Core.InternalServices import Coordinator
+        from Ganga.GPIDev.Base.Proxy import isType
 
         log.debug("runMonitoring")
 
@@ -858,6 +861,9 @@ class JobRegistry_Monitor(GangaThread):
             log.error("%s not found in client callback dictionary." % clientFunc.__name__)
 
     def __defaultActiveBackendsFunc(self):
+        from Ganga.Core.GangaRepository import RegistryKeyError, RegistryLockError
+        from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+
         log.debug("__defaultActiveBackendsFunc")
         active_backends = {}
         # FIXME: this is not thread safe: if the new jobs are added then
@@ -895,6 +901,9 @@ class JobRegistry_Monitor(GangaThread):
 
     # This function will be run by update threads
     def _checkBackend(self, backendObj, jobListSet, lock):
+
+        from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+        from Ganga.Core import BackendError
 
         log.debug("\n\n_checkBackend\n\n")
 
@@ -998,6 +1007,8 @@ class JobRegistry_Monitor(GangaThread):
 
     def _checkActiveBackends(self, activeBackendsFunc):
 
+        from Ganga.GPIDev.Base.Proxy import stripProxy, getName
+
         log.debug("calling function _checkActiveBackends")
         activeBackends = activeBackendsFunc()
 
@@ -1044,6 +1055,8 @@ class JobRegistry_Monitor(GangaThread):
         return self.updateJobStatus
 
     def makeCredCheckJobInsertor(self, credObj):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         def credCheckJobInsertor():
             def cb_Success():
                 self.enableCallbackHook(credCheckJobInsertor)
@@ -1065,6 +1078,8 @@ class JobRegistry_Monitor(GangaThread):
         return credCheckJobInsertor
 
     def makeCredChecker(self, credObj):
+        from Ganga.GPIDev.Base.Proxy import getName
+
         def credChecker():
             log.debug("Checking %s." % getName(credObj))
             try:
@@ -1079,6 +1094,8 @@ class JobRegistry_Monitor(GangaThread):
         """
         Inserts the disk space checking task in the monitoring task queue
         """
+        from Ganga.Core.InternalServices import Coordinator
+
         def cb_Success():
             self.enableCallbackHook(self.diskSpaceCheckJobInsertor)
 
@@ -1136,6 +1153,7 @@ def _trace(frame, event, arg):
 
 def getStackTrace():
     import inspect
+    from Ganga.GPIDev.Base.Proxy import getName
 
     try:
         status = "Available threads:\n"

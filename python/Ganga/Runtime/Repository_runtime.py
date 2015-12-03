@@ -2,7 +2,7 @@
 Internal initialization of the repositories.
 """
 
-import Ganga.Utility.Config
+import Ganga.Utility.Config.Config
 from Ganga.Utility.logging import getLogger
 import os.path
 from Ganga.Utility.files import expandfilename
@@ -10,7 +10,7 @@ from Ganga.Core.GangaRepository import getRegistries
 from Ganga.Core.GangaRepository import getRegistry
 from Ganga.Core.exceptions import GangaException
 
-config = Ganga.Utility.Config.getConfig('Configuration')
+config = Ganga.Utility.Config.Config.getConfig('Configuration')
 logger = getLogger()
 
 
