@@ -38,6 +38,7 @@ Extend the behaviour of the default *atexit* module to support:
   registers the function with the lowest priority (sys.maxint)
 """
 
+# System imports
 import atexit
 
 

@@ -29,11 +29,11 @@
   repository/workspace) when credentials become invalid preventing normal functioning of these services.
   E.g: invalid grid proxy triggers the monitor-loop stop
 """
-from Ganga.Utility.Config import getConfig
+# Required Ganga imports from other modules
 from Ganga.Utility.logging import getLogger
-from Ganga.GPIDev.Base.Proxy import getName
 
-log = getLogger()
+# Global Variables
+logger = getLogger()
 
 # the overall state of Ganga internal services
 servicesEnabled = True
@@ -45,8 +45,8 @@ def isCredentialRequired(credObj):
     should trigger the deactivation of Ganga internal services.  
     """
 
-    from Ganga.Runtime import Workspace_runtime
-    from Ganga.Runtime import Repository_runtime
+    from Ganga.Runtime import Workspace_runtime, Repository_runtime
+    from Ganga.GPIDev.Base.Proxy import getName
 
     if getName(credObj) == 'AfsToken':
         return Workspace_runtime.requiresAfsToken() or Repository_runtime.requiresAfsToken()
@@ -70,6 +70,7 @@ def notifyInvalidCredential(credObj):
     The Core is notified when one of the monitored credentials is invalid
     @see ICredential.create()
     """
+    from Ganga.GPIDev.Base.Proxy import getName
 
     # ignore this notification if the internal services are already stopped
     if not servicesEnabled:
@@ -106,6 +107,8 @@ def _diskSpaceChecker():
         used  = diskusage.splitlines()[1].split()[4] # get disk usage (in %)
         return int(used[:-1])<70
     """
+    from Ganga.Utility.Config import getConfig
+
     log.debug("Checking disk space")
     try:
         config = getConfig('PollThread')
