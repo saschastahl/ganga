@@ -1,11 +1,12 @@
-from __future__ import absolute_import
+# System imports
 import os
-import sys
-import Ganga.Utility.logging
-logger = Ganga.Utility.logging.getLogger(modulename=True)
 
-from .WNSandbox import OUTPUT_TARBALL_NAME, PYTHON_DIR
-from Ganga.Core import GangaException, GangaIOError
+# Required Ganga imports from other modules
+from Ganga.Utility.logging import getLogger
+from Ganga.Core.exceptions import GangaException
+
+# Global Variables
+logger = getLogger(modulename=True)
 
 
 class SandboxError(GangaException):
@@ -34,6 +35,8 @@ def getGangaModulesAsSandboxFiles(modules):
     import sys
     from Ganga.Utility.files import remove_prefix
     from Ganga.GPIDev.Lib.File import File
+    from Ganga.Core import GangaIOError
+    from Ganga.Core.Sandbox.WNSandbox import PYTHON_DIR
 
     files = []
     for m in modules:
@@ -147,6 +150,7 @@ def getPackedOutputSandbox(src_dir, dest_dir):
                 'src_dir': source directory with tarball
                 'dest_dir': desti nation directory for output files
     """
+    from Ganga.Core.Sandbox.WNSandbox import OUTPUT_TARBALL_NAME
 
     tgzfile = os.path.join(src_dir, OUTPUT_TARBALL_NAME)
     if os.access(tgzfile, os.F_OK):
