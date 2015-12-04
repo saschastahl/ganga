@@ -3,17 +3,20 @@
 #
 # $Id: IMerger.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
-from Ganga.GPIDev.Base.Proxy import GPIProxyObject
-from Ganga.Utility.Config import makeConfig, ConfigError, getConfig
-from Ganga.GPIDev.Adapters.IPostProcessor import PostProcessException, IPostProcessor
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
-import Ganga.Utility.logging
-import os
 
-from Ganga.GPIDev.Base.Proxy import isType
+# System Imports
+import os
 from posixpath import curdir, sep, pardir, join, abspath, commonprefix
 
-logger = Ganga.Utility.logging.getLogger()
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Adapters.IPostProcessor import IPostProcessor
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
+from Ganga.Utility.Config.Config import getConfig, makeConfig
+from Ganga.Utility.logging import getLogger
+
+# Global Variables
+logger = getLogger()
+
 
 def relpath(path, start=curdir):
     """Return a relative version of a path"""
@@ -40,6 +43,7 @@ config.addOption('std_merge', 'TextMerger', 'Standard (default) merger')
 
 def getDefaultMergeDir():
     """Gets the default location of the mergers outputdir from the config"""
+    from Ganga.Utility.Config.Config import ConfigError
 
     try:
         config = getConfig('Mergers')
@@ -77,6 +81,8 @@ class IMerger(IPostProcessor):
         """
         Execute
         """
+        from Ganga.GPIDev.Adapters.IPostProcessor import PostProcessException
+
         if (len(job.subjobs) != 0):
             try:
                 return self.merge(job.subjobs, job.outputdir)
@@ -87,6 +93,9 @@ class IMerger(IPostProcessor):
             return True
 
     def merge(self, jobs, outputdir=None, ignorefailed=None, overwrite=None):
+
+        from Ganga.GPIDev.Adapters.IPostProcessor import PostProcessException
+        from Ganga.GPIDev.Base.Proxy import isType
 
         if ignorefailed == None:
             ignorefailed = self.ignorefailed
