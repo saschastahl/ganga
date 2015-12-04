@@ -3,15 +3,16 @@ Sandbox functions used in the job wrapper script on the worker node.
 The text of this module is sourced into the job wrapper script.
 It therefore may use ###TAGS###  which are expanded in the wrapper script.
 """
+# System imports
+import os
+import tarfile
+from contextlib import closing
 
+# Global Variables
 INPUT_TARBALL_NAME = '_input_sandbox.tgz'
 OUTPUT_TARBALL_NAME = '_output_sandbox.tgz'
 PYTHON_DIR = '_python'
 
-import os
-
-import tarfile
-from contextlib import closing
 
 def getPackedInputSandbox(tarpath, dest_dir='.'):
     """Get all sandbox_files from tarball and write them to the workdir.
