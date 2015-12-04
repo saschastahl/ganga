@@ -3,12 +3,17 @@
 #
 # $Id: IMerger.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
-from Ganga.GPIDev.Adapters.IPostProcessor import PostProcessException, IPostProcessor
-from Ganga.GPIDev.Schema import Schema, Version, SimpleItem
+
+# System imports
 import os
 import glob
 
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Adapters.IPostProcessor import IPostProcessor
+from Ganga.GPIDev.Schema.Schema import Schema, Version, SimpleItem
 from Ganga.Utility.logging import getLogger
+
+# Global Variables
 logger = getLogger()
 
 
@@ -71,6 +76,7 @@ class IFileChecker(IChecker):
     order = 2
 
     def findFiles(self, job):
+        from Ganga.GPIDev.Adapters.IPostProcessor import PostProcessException
 
         if not len(self.files):
             raise PostProcessException(
