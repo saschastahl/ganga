@@ -38,26 +38,3 @@ class _ApplicationRuntimeHandlers(object):
 
 allHandlers = _ApplicationRuntimeHandlers()
 
-if __name__ == '__main__':
-
-    a = _ApplicationRuntimeHandlers()
-    a.add('a', 'X', 1)
-    a.add('a', 'Y', 1)
-    a.add('b', 'X', 1)
-    a.add('c', 'Z', 1)
-
-    def compare(alist, blist):
-        alist.sort()
-        blist.sort()
-        assert(alist == blist)
-
-    compare(a.getAllBackends(), ['X', 'Y', 'Z'])
-    compare(a.getAllApplications(), ['a', 'b', 'c'])
-
-    compare(a.getAllBackends('a'), ['X', 'Y'])
-    compare(a.getAllBackends('b'), ['X'])
-    compare(a.getAllBackends('c'), ['Z'])
-
-    compare(a.getAllApplications('X'), ['a', 'b'])
-    compare(a.getAllApplications('Y'), ['a'])
-    compare(a.getAllApplications('Z'), ['c'])
