@@ -4,9 +4,10 @@
 # $Id: StandardJobConfig.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
 
+# Required Ganga imports from other modules
 from Ganga.Utility.logging import getLogger
-import os
-import copy
+
+# Global Variables
 logger = getLogger()
 
 
