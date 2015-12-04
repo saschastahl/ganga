@@ -4,10 +4,10 @@
 # $Id: ISplitter.py,v 1.1 2008-07-17 16:40:52 moscicki Exp $
 ##########################################################################
 
-from Ganga.GPIDev.Base import GangaObject
-from Ganga.GPIDev.Base.Proxy import TypeMismatchError, isType, stripProxy
-from Ganga.GPIDev.Schema import Schema, Version
-from Ganga.Utility.util import containsGangaObjects
+# Required Ganga imports from other modules
+from Ganga.GPIDev.Base.Objects import GangaObject
+from Ganga.GPIDev.Schema.Schema import Schema, Version
+
 
 class SplittingError(Exception):
 
@@ -60,6 +60,7 @@ class ISplitter(GangaObject):
         split() method) then SplittingError exception is raised. This method is
         called directly by the framework and should not be modified in the derived
         classes. """
+        from Ganga.GPIDev.Base.Proxy import isType, stripProxy
 
         # try:
         subjobs = self.split(job)
