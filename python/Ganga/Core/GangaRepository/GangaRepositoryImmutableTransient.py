@@ -1,13 +1,20 @@
+# System imports
 from __future__ import absolute_import
 import glob
 import pickle
 import os
 import sys
 import copy
+
+# Ganga imports
 from Ganga.GPIDev.Persistency import load, stripped_export
-from Ganga.Core.GangaRepository import allRegistries, RepositoryError
-from .GangaRepository import GangaRepository
+from Ganga.Core.GangaRepository import allRegistries
+from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
 from Ganga.Utility.logging import getLogger
+from Ganga.GPIDev.Base.Proxy import stripProxy
+
+# Globals
 logger = getLogger()
 
 
@@ -47,7 +54,6 @@ class GangaRepositoryImmutableTransient(GangaRepository):
                 if self.pickle_files:
                     obj = pickle.load(open(f, 'rb'))
                 else:
-                    from Ganga.GPIDev.Base.Proxy import stripProxy
                     obj = stripProxy(load(f)[0])
             except:
                 logger.error("Unable to load file '%s'" % f)
