@@ -4,8 +4,8 @@
 # to run locking tests (run several instances in the same directory, from
 # different machines)
 
+# System imports
 from __future__ import print_function
-
 import os
 import time
 import errno
@@ -13,20 +13,20 @@ import fcntl
 import random
 import datetime
 import getpass
-
+import sys
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
 
+# Ganga imports
 from Ganga.Utility.logging import getLogger
-
 from Ganga.Utility.Config.Config import getConfig, ConfigError
 from Ganga.GPIDev.Base.Proxy import getName
-
+from Ganga.Core.exceptions import GangaException
 try:
-    from Ganga.Core.GangaThread import GangaThread
-    from Ganga.Core.GangaRepository import RepositoryError
+    from Ganga.Core.GangaThread.GangaThread import GangaThread
+    from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
 except ImportError:
     from threading import Thread
 
@@ -46,10 +46,8 @@ except ImportError:
     class RepositoryError(Exception):
         pass
 
-
+# Globals
 logger = getLogger()
-
-
 session_lock_last = 0
 session_expiration_timeout = 0
 try:
@@ -60,6 +58,7 @@ except ConfigError, err:
 session_lock_refresher = None
 
 last_count_access = []
+
 
 def getGlobalLockRef(session_name, sdir, gfn, _on_afs):
     global session_lock_refresher
@@ -208,7 +207,6 @@ class SessionLockRefresher(GangaThread):
                 if now is None and failCount < 4:
                     try:
                         logger.debug("Attempting to lock file again, unknown error:\n'%s'" % str(x))
-                        import time
                         time.sleep(0.5)
                         failcount=failCount+1
                         now = self._reallyUpdateLocks(index, failcount)
@@ -226,7 +224,6 @@ class SessionLockRefresher(GangaThread):
                     Possible reasons could be that this computer has a very high load, or that the system clocks on computers running Ganga are not synchronized.\n\
                     On computers with very high load and on network filesystems, try to avoid running concurrent ganga sessions for long.\n '%s' : %s" % (this_index_file, x))
                 else:
-                    from Ganga.Core import GangaException
                     raise GangaException("Error Opening global .session file for this session: %s" % this_index_file)
         return now
 
@@ -994,7 +991,6 @@ def test2():
         slm.check()
 
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) == 1:
         logger.debug("Usage: python SessionLock.py {1|2}")
         sys.exit(-1)

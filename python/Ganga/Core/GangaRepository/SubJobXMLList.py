@@ -1,12 +1,22 @@
-from Ganga.GPIDev.Schema.Schema import Schema, SimpleItem, Version
+# System imports
+import errno
+import os
+
+# Ganga imports
+from Ganga.GPIDev.Schema.Schema import Schema, Version
 from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.Utility.logging import getLogger
 from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
 from Ganga.Core.exceptions import GangaException
-from Ganga.GPIDev.Base.Proxy import stripProxy
-import errno
-import copy
+from Ganga.Core.GangaRepository.PickleStreamer import from_file
+from Ganga.Core.GangaRepository.PickleStreamer import from_file as vstreamer_from_file
+from Ganga.Core.GangaRepository.GangaRepositoryXML import safe_save
+from Ganga.Core.GangaRepository.PickleStreamer import to_file
+from Ganga.Core.GangaRepository.VStreamer import to_file as vstreamer_to_file
+
+# Globals
 logger = getLogger()
+
 
 ##FIXME There has to be a better way of doing this?
 class SJXLIterator(object):
@@ -122,12 +132,10 @@ class SubJobXMLList(GangaObject):
 
     def load_subJobIndex(self):
         """Load the index from all sujobs ynto _subjobIndexData or empty it is an error occurs"""
-        import os
         index_file = os.path.join(self._jobDirectory, self._subjob_master_index_name )
         if os.path.isfile( index_file ):
             index_file_obj = None
             try:
-                from Ganga.Core.GangaRepository.PickleStreamer import from_file
                 try:
                     index_file_obj = open( index_file, "r" )
                     self._subjobIndexData = from_file( index_file_obj )[0]
@@ -180,8 +188,6 @@ class SubJobXMLList(GangaObject):
 
     def __really_writeIndex(self):
         """Do the actual work of writing the index for all subjobs"""
-        import os
-
         all_caches = {}
         for sj_id in range(len(self)):
             if sj_id in self._cachedJobs.keys():
@@ -199,7 +205,6 @@ class SubJobXMLList(GangaObject):
                     all_caches[sj_id]['modified'] = os.stat(disk_location).st_ctime
 
         try:
-            from Ganga.Core.GangaRepository.PickleStreamer import to_file
             index_file = os.path.join(self._jobDirectory, self._subjob_master_index_name )
             index_file_obj = open( index_file, "w" )
             to_file( all_caches, index_file_obj )
@@ -221,7 +226,6 @@ class SubJobXMLList(GangaObject):
         if index_str in self._cached_filenames:
             return self._cached_filenames[index_str]
 
-        import os.path
         subjob_data = os.path.join(self._jobDirectory, str(index), self._dataFileName)
         if backup_decision is True:
             subjob_data = subjob_data + '~'
@@ -231,7 +235,6 @@ class SubJobXMLList(GangaObject):
 
     def __len__(self):
         """ return length or lookup the last modified time compare against self._stored_len[0] and if nothings changed return self._stored_len[1]"""
-        import os
         try:
             this_time = os.stat(self._jobDirectory).st_ctime
         except OSError:
@@ -243,13 +246,11 @@ class SubJobXMLList(GangaObject):
                 return self._stored_len[1]
 
         subjob_count = 0
-        from os import listdir, path
-        if not path.isdir( self._jobDirectory ):
+        if not os.path.isdir( self._jobDirectory ):
             return 0
 
-        jobDirectoryList = listdir( self._jobDirectory )
+        jobDirectoryList = os.listdir( self._jobDirectory )
 
-        import os.path
         subjob_count=0
         while True:
             if str(subjob_count) in jobDirectoryList:
@@ -354,15 +355,13 @@ class SubJobXMLList(GangaObject):
                 else:
                     raise RepositoryError(self,"IOError on loading subobject %s: %s" % (index, x))
 
-            from Ganga.Core.GangaRepository.VStreamer import from_file
-
             try:
-                self._cachedJobs[index] = from_file(sj_file)[0]
+                self._cachedJobs[index] = vstreamer_from_file(sj_file)[0]
             except Exception as err:
 
                 try:
                     subjob_data = self.__get_dataFile(str(index), True)
-                    self._cachedJobs[index] = from_file(sj_file)[0]
+                    self._cachedJobs[index] = vstreamer_from_file(sj_file)[0]
                 except Exception as err:
                     logger.debug("Failed to Load XML for job: %s using: %s" % (str(index), str(subjob_data)))
                     logger.debug("Err:\n%s" % str(err))
@@ -425,16 +424,12 @@ class SubJobXMLList(GangaObject):
 
     def flush(self):
         """Flush all subjobs to disk using XML methods"""
-        from Ganga.Core.GangaRepository.GangaRepositoryXML import safe_save
-
-        from Ganga.Core.GangaRepository.VStreamer import to_file
-
         for index in range(len(self)):
             if index in self._cachedJobs.keys():
                 subjob_data = self.__get_dataFile(str(index))
                 subjob_obj = self._cachedJobs[index]
 
-                safe_save( subjob_data, subjob_obj, to_file )
+                safe_save( subjob_data, subjob_obj, vstreamer_to_file )
 
         self.write_subJobIndex()
         return

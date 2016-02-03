@@ -1,12 +1,11 @@
-from __future__ import absolute_import
-from .Config import getConfig, makeConfig, ConfigError, configure, allConfigs, setConfigOption, expandConfigPath, config_scope, setSessionValue, getFlavour
-import os.path
+# System imports
+import os
 
-## from Config import getConfigDict
+# Ganga imports
+from Ganga.Utility.Config.Config import getConfig
+
 
 # here are some useful option filters
-
-
 def expandvars(c, v):
     """The ~ and $VARS are automatically expanded. """
     return os.path.expanduser(os.path.expandvars(v))

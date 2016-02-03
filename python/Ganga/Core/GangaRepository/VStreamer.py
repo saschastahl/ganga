@@ -1,23 +1,24 @@
+# System imports
 from __future__ import print_function
 from __future__ import absolute_import
+import xml.sax.saxutils
+import sys
+import xml.parsers.expat
+
+# Ganga imports
 from Ganga.Core.exceptions import GangaException
 from Ganga.Utility.logging import getLogger
 from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
-
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
 
 # config_scope is namespace used for evaluating simple objects (e.g. File)
-from Ganga.Utility.Config import config_scope
-
-from Ganga.Utility.Plugin import PluginManagerError, allPlugins
-
+from Ganga.Utility.Config.Config import config_scope
+from Ganga.Utility.Plugin.GangaPlugin import PluginManagerError, allPlugins
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema import Schema, Version
+from Ganga.GPIDev.Schema.Schema import Schema, Version
+from Ganga.Core.GangaRepository.GangaRepository import SchemaVersionError
 
-from .GangaRepository import SchemaVersionError
-
-import xml.sax.saxutils
-
+# Globals
 logger = getLogger()
 
 ##########################################################################
@@ -153,7 +154,6 @@ class VStreamer(object):
         if out is not None:
             self.out = out
         else:
-            import sys
             self.out = sys.stdout
 
     def begin_root(self):
@@ -277,8 +277,6 @@ class Loader(object):
     def parse(self, s):
         """ Parse and load object from string s using internal XML parser (expat).
         """
-        import xml.parsers.expat
-
         # 3 handler functions
         def start_element(name, attrs):
             #logger.debug('Start element: name=%s attrs=%s', name, attrs) #FIXME: for 2.4 use CurrentColumnNumber and CurrentLineNumber

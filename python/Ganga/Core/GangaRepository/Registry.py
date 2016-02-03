@@ -1,20 +1,25 @@
-from Ganga.Utility.logging import getLogger
-
-from Ganga.Core import GangaException
-from Ganga.Core.GangaRepository import InaccessibleObjectError, RepositoryError
-
+# System imports
 import time
 import threading
 
+# Ganga imports
+from Ganga.Utility.logging import getLogger
+from Ganga.Core.exceptions import GangaException
+from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError, RepositoryError
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
 from Ganga.GPIDev.Base.Objects import GangaObject
-from Ganga.GPIDev.Schema import Schema, Version
+from Ganga.GPIDev.Schema.Schema import Schema, Version
 from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
+from Ganga.Core.GangaRepository.GangaRepositoryXML import GangaRepositoryLocal
+from Ganga.Core.GangaRepository.GangaRepositorySQLite import GangaRepositorySQLite
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
+from Ganga.Core.GangaRepository.GangaRepositoryImmutableTransient import GangaRepositoryImmutableTransient
 
+# Globals
 logger = getLogger()
-
 _reg_id_str = '_registry_id'
 _id_str = 'id'
+
 
 class RegistryError(GangaException):
 
@@ -87,16 +92,12 @@ class RegistryIndexError(RegistryError, IndexError):
 def makeRepository(registry):
     """Factory that selects, imports and instantiates the correct GangaRepository"""
     if registry.type in ["LocalXML", "LocalPickle"]:
-        from Ganga.Core.GangaRepository.GangaRepositoryXML import GangaRepositoryLocal
         return GangaRepositoryLocal(registry)
     elif registry.type in ["SQLite"]:
-        from Ganga.Core.GangaRepository.GangaRepositorySQLite import GangaRepositorySQLite
         return GangaRepositorySQLite(registry)
     elif registry.type in ["Transient"]:
-        from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
         return GangaRepository(registry)
     elif registry.type in ["ImmutableTransient"]:
-        from Ganga.Core.GangaRepository.GangaRepositoryImmutableTransient import GangaRepositoryImmutableTransient
         return GangaRepositoryImmutableTransient(registry, registry.location, registry.file_ext, registry.pickle_files)
     else:
         raise RegistryError("Repository %s: Unknown repository type %s" % (registry.name, registry.type))
@@ -302,7 +303,6 @@ class Registry(object):
         while self.shouldReleaseRun is True:
 
             ## Needed import for shutdown
-            import time
             timeNow = time.time()
 
             modTime = self._dirtyModTime
@@ -1065,7 +1065,6 @@ class Registry(object):
 
     def shutdown(self):
         """Flush and disconnect the repository. Called from Repository_runtime.py """
-        from Ganga.Utility.logging import getLogger
 #        self.shouldReleaseRun = False
 #        self.releaseThread.stop()
         logger = getLogger()

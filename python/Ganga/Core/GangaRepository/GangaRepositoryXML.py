@@ -3,34 +3,33 @@
 # * lazy loading
 # * locking
 
-from Ganga.Core.GangaRepository import GangaRepository, RepositoryError, InaccessibleObjectError
-from Ganga.Utility.Plugin import PluginManagerError
+# System imports
 import os
 import os.path
-import time
 import errno
-import copy
+import time
+from shutil import copyfile
 
+# Ganga imports
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository, RepositoryError, InaccessibleObjectError
+from Ganga.Utility.Plugin.GangaPlugin import PluginManagerError
 from Ganga.Core.GangaRepository.SessionLock import SessionLockManager
-
-import Ganga.Utility.logging
-
+from Ganga.Utility.logging import getLogger
 from Ganga.Core.GangaRepository.PickleStreamer import to_file as pickle_to_file
 from Ganga.Core.GangaRepository.PickleStreamer import from_file as pickle_from_file
-
 from Ganga.Core.GangaRepository.VStreamer import to_file as xml_to_file
 from Ganga.Core.GangaRepository.VStreamer import from_file as xml_from_file
 from Ganga.Core.GangaRepository.VStreamer import XMLFileError
-
-from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList, makeGangaListByRef
+from Ganga.Core.exceptions import GangaException
+from Ganga.Core.GangaRepository.VStreamer import EmptyGangaObject
+from Ganga.Core.GangaRepository.SubJobXMLList import SubJobXMLList
 from Ganga.GPIDev.Base.Objects import Node
-from Ganga.Core.GangaRepository import SubJobXMLList
-
 from Ganga.GPIDev.Base.Proxy import isType, stripProxy, getName
 
-logger = Ganga.Utility.logging.getLogger()
-
+# Globals
+logger = getLogger()
 save_all_history = False
+
 
 def check_app_hash(obj):
     """Writes a file safely, raises IOError on error"""
@@ -148,7 +147,6 @@ def rmrf(name, count=0):
         logger.debug("Trying again to remove: %s" % str(name))
         if count == 3:
             logger.error("Tried 3 times to remove file/folder: %s" % str(name))
-            from Ganga.Core.exceptions import GangaException
             raise GangaException("Failed to remove file/folder: %s" % str(name))
 
     if os.path.isdir(name):
@@ -254,7 +252,6 @@ class GangaRepositoryLocal(GangaRepository):
     def shutdown(self):
         """Shutdown the repository. Flushing is done by the Registry
         Raise RepositoryError"""
-        from Ganga.Utility.logging import getLogger
         logger = getLogger()
         logger.debug("Shutting Down GangaRepositoryLocal: %s" % self.registry.name)
         self._write_master_cache(True)
@@ -442,7 +439,6 @@ class GangaRepositoryLocal(GangaRepository):
                 except OSError as err:
                     logger.debug("_write_master_cache: %s" % str(err))
                     logger.debug("_cache_load_timestamp: %s" % str(self._cache_load_timestamp))
-                    import errno
                     if err.errno == errno.ENOENT:  # If file is not found
                         time = -1
                     else:
@@ -617,7 +613,6 @@ class GangaRepositoryLocal(GangaRepository):
 
         fn = self.get_fn(this_id)
         obj = self.objects[this_id]
-        from Ganga.Core.GangaRepository.VStreamer import EmptyGangaObject
         if not isType(obj, EmptyGangaObject):
             split_cache = None
 
@@ -645,7 +640,6 @@ class GangaRepositoryLocal(GangaRepository):
                                 logger.debug("Using Folder: %s" % str(os.path.dirname(sfn)))
                             safe_save(sfn, split_cache[i], self.to_file)
                             split_cache[i]._setFlushed()
-                    from Ganga.Core.GangaRepository.SubJobXMLList import SubJobXMLList
                     # Now generate an index file to take advantage of future non-loading goodness
                     tempSubJList = SubJobXMLList(os.path.dirname(fn), self.registry, self.dataFileName, False, parent=obj)
                     ## equivalent to for sj in job.subjobs
@@ -797,7 +791,6 @@ class GangaRepositoryLocal(GangaRepository):
 
         if (self._load_timestamp.get(this_id, 0) != os.fstat(fobj.fileno()).st_ctime):
 
-            import time
             b4=time.time()
             tmpobj, errs = self.from_file(fobj)
             a4=time.time()
@@ -834,7 +827,6 @@ class GangaRepositoryLocal(GangaRepository):
                 if os.path.isfile(fn + '~'):
                     logger.warning("XML File: %s missing, recovering from backup, some changes may have been lost!" % fn)
                     try:
-                        from shutil import copyfile
                         copyfile(fn+'~', fn)
                     except:
                         logger.warning("Error Recovering the backup file! loading of Job may Fail!")

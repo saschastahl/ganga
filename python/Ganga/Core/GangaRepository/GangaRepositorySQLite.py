@@ -1,13 +1,11 @@
-from __future__ import absolute_import
 # Note: Following stuff must be considered in a GangaRepository:
 #
 # * lazy loading
 # * locking
 
-from .GangaRepository import GangaRepository, RepositoryError
+# System imports
+from __future__ import absolute_import
 import os
-import os.path
-
 import sqlite
 
 try:
@@ -15,8 +13,12 @@ try:
 except:
     import pickle
 
-import Ganga.Utility.logging
-logger = Ganga.Utility.logging.getLogger()
+# Ganga imports
+from Ganga.Utility.logging import getLogger
+from Ganga.Core.GangaRepository.GangaRepository import GangaRepository, RepositoryError
+
+# Globals
+logger = getLogger()
 
 
 class GangaRepositorySQLite(GangaRepository):
