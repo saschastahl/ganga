@@ -12,19 +12,20 @@
 # if a root object has a status field and some load error occurs, it will
 # be set to "incomplete"
 
+# Ganga imports
 from Ganga.Utility.logging import getLogger
-
 from Ganga.Utility.Plugin import allPlugins
 from Ganga.Core import GangaException
 from Ganga.GPIDev.Base.Proxy import getName
+from Ganga.Core.InternalServices.Coordinator import disableInternalServices
+from Ganga.Runtime import Repository_runtime
 
+# Globals
 logger = getLogger()
-
-# Error raised on schema version error
 
 
 class SchemaVersionError(GangaException):
-
+    # Error raised on schema version error
     def __init__(self, what=''):
         GangaException.__init__(self, what)
         self.what = what
@@ -59,10 +60,8 @@ class RepositoryError(GangaException):
         logger.error("A severe error occurred in the Repository '%s': %s" % (repo.registry.name, what))
         logger.error('If you believe the problem has been solved, type "reactivate()" to re-enable ')
         try:
-            from Ganga.Core.InternalServices.Coordinator import disableInternalServices
             disableInternalServices()
             logger.error("Shutting Down Repository_runtime")
-            from Ganga.Runtime import Repository_runtime
             Repository_runtime.shutdown()
         except:
             logger.error("Unable to disable Internal services, they may have already been disabled!")
