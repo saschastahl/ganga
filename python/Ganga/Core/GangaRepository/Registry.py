@@ -5,14 +5,13 @@ import threading
 # Ganga imports
 from Ganga.Utility.logging import getLogger
 from Ganga.Core.exceptions import GangaException
-from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError, RepositoryError
+from Ganga.Core.GangaRepository.GangaRepository import InaccessibleObjectError, RepositoryError, GangaRepository
 from Ganga.GPIDev.Lib.GangaList.GangaList import GangaList
 from Ganga.GPIDev.Base.Objects import GangaObject
 from Ganga.GPIDev.Schema.Schema import Schema, Version
 from Ganga.GPIDev.Base.Proxy import stripProxy, isType, getName
 from Ganga.Core.GangaRepository.GangaRepositoryXML import GangaRepositoryLocal
 from Ganga.Core.GangaRepository.GangaRepositorySQLite import GangaRepositorySQLite
-from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
 from Ganga.Core.GangaRepository.GangaRepositoryImmutableTransient import GangaRepositoryImmutableTransient
 
 # Globals

@@ -9,8 +9,7 @@ import copy
 # Ganga imports
 from Ganga.GPIDev.Persistency import load, stripped_export
 from Ganga.Core.GangaRepository import allRegistries
-from Ganga.Core.GangaRepository.GangaRepository import RepositoryError
-from Ganga.Core.GangaRepository.GangaRepository import GangaRepository
+from Ganga.Core.GangaRepository.GangaRepository import RepositoryError, GangaRepository
 from Ganga.Utility.logging import getLogger
 from Ganga.GPIDev.Base.Proxy import stripProxy
 
