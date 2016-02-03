@@ -14,8 +14,8 @@
 
 # Ganga imports
 from Ganga.Utility.logging import getLogger
-from Ganga.Utility.Plugin import allPlugins
-from Ganga.Core import GangaException
+from Ganga.Utility.Plugin.GangaPlugin import allPlugins
+from Ganga.Core.exceptions import GangaException
 from Ganga.GPIDev.Base.Proxy import getName
 from Ganga.Core.InternalServices.Coordinator import disableInternalServices
 from Ganga.Runtime import Repository_runtime
