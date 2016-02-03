@@ -1,6 +1,13 @@
-from Ganga.Utility.logging import getLogger
+# System imports
 import time
+import threading
 
+# Ganga imports
+from Ganga.Utility.logging import getLogger
+from Ganga.Core.GangaThread.MTRunner.MTRunner import DuplicateDataItemError
+from Ganga.GPI import queues
+
+# Globals
 logger = getLogger('GangaThread')
 
 
@@ -37,7 +44,6 @@ class GangaThreadPool(object):
     def addServiceThread(self, t):
         #logger.debug('service thread "%s" added to the GangaThreadPool', t.getName())
         ##   HERE TO AVOID AN IMPORT ERROR!
-        from Ganga.Core.GangaThread.MTRunner import DuplicateDataItemError
         try:
             self.__threads.append(t)
         except DuplicateDataItemError as e:
@@ -73,7 +79,6 @@ class GangaThreadPool(object):
         try:
             self._really_shutdown(should_wait_cb)
         except Exception as err:
-            from Ganga.Utility.logging import getLogger
             logger = getLogger('GangaThread')
             logger.error("Error shutting down thread Pool!")
             logger.error("\n%s" % str(err))
@@ -84,13 +89,11 @@ class GangaThreadPool(object):
         #from Ganga.GPI import queues
         #queues._stop_all_threads(shutdown=True)
 
-        from Ganga.Utility.logging import getLogger
         logger = getLogger('GangaThread')
 
         logger.debug('shutting down GangaThreadPool with timeout %d sec' % self.SHUTDOWN_TIMEOUT)
 
         # run shutdown thread in background
-        import threading
         shutdown_thread = threading.Thread(target=self.__do_shutdown__, args=(self.__threads,), name='GANGA_Update_Thread_shutdown')
         shutdown_thread.setDaemon(True)
         shutdown_thread.start()
@@ -153,10 +156,7 @@ class GangaThreadPool(object):
     @staticmethod
     def __do_shutdown__(_all_threads):
 
-        from Ganga.Utility.logging import getLogger
         logger = getLogger('GangaThread')
-
-        from Ganga.GPI import queues
 
         queues._purge_all()
         queues._stop_all_threads(shutdown=True)
@@ -219,7 +219,6 @@ class GangaThreadPool(object):
         num_alive_threads = __cnt_alive_threads__(_all_threads)
 
         while num_alive_threads > 0:
-            from Ganga.Utility.logging import getLogger
             logger = getLogger('GangaThread')
             # fix for bug #62543 https://savannah.cern.ch/bugs/?62543
             # following 2 lines swapped so that we access no globals between

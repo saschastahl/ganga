@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+# system imports
 from Queue import Queue
 import threading
 

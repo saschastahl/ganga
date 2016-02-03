@@ -1,11 +1,16 @@
+# System imports
 import collections
+
+# Ganga imports
 from Ganga.Core.GangaThread.WorkerThreads.WorkerThreadPool import WorkerThreadPool
-from Ganga.Utility.Config import getConfig
+from Ganga.Utility.Config.Config import getConfig
 from Ganga.Utility.logging import getLogger
 from Ganga.Utility.ColourText import getColour
 from Ganga.GPIDev.Base.Proxy import getName
-logger = getLogger()
+from Ganga.Core import getCurrentShutdownPolicy
 
+# Globals
+logger = getLogger()
 _user_threadpool = None
 _monitoring_threadpool = None
 
@@ -100,7 +105,6 @@ class ThreadPoolQueueMonitor(object):
         p.text(self._display())
 
     def __shouldWaitonShutdown(self):
-        from Ganga.Core import getCurrentShutdownPolicy
 
         if getCurrentShutdownPolicy() == 'batch':
             return True
