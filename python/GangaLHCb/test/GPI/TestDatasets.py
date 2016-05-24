@@ -7,29 +7,33 @@ from Ganga.testlib.GangaUnitTest import GangaUnitTest
 
 class TestDatasets(GangaUnitTest):
 
-    # TODO: Mark as expected to fail because there should be an addProxy in __getitem__.
-    # Will be superceded by new Proxy handling code from Matt Williams
-    @pytest.mark.xfail
-    @external
     def testDatasets(self):
-
-        from Ganga.GPI import DiracFile, PhysicalFile, LHCbDataset, Job, LocalFile
+        """
+        Test the parts of the LHCbDataset which can be tested locally
+        NB:
+            99.9% of use of this is an LHCbDataset which consists of ONLY DiracFile objects
+            There should __NEVER__ be any PhysicalFile or LogicalFile objects in this.
+            Although the these are 'supported' in transitioning from Ganga 6.0.xy to 6.1
+            they're changed upon load to LocalFile and DiracFile only, their use is discouraged
+            as this will likely be dropped in the future
+        """
+        from Ganga.GPI import DiracFile, LHCbDataset, Job, LocalFile, OutputData
 
         # test constructors/setters
         ds = LHCbDataset(['lfn:a', 'pfn:b'])
         assert len(ds) == 2
         print(ds[0])
         assert isinstance(ds[0], DiracFile)
-        assert isinstance(ds[1], PhysicalFile)
+        assert isinstance(ds[1], LocalFile)
         ds = LHCbDataset()
         ds.files = ['lfn:a', 'pfn:b']
         assert isinstance(ds[0], DiracFile)
-        assert isinstance(ds[1], PhysicalFile)
+        assert isinstance(ds[1], LocalFile)
         ds.files.append('lfn:c')
         assert isinstance(ds[-1], DiracFile)
         d = OutputData(['a', 'b'])
-        assert isinstance(d.files[0],str)
-        assert isinstance(d.files[1],str)
+        assert isinstance(d.files[0], str)
+        assert isinstance(d.files[1], str)
 
         # check job assignments
         j = Job()
@@ -40,6 +44,12 @@ class TestDatasets(GangaUnitTest):
         print(type(j.outputfiles[1]))
         assert isinstance(j.outputfiles[1], DiracFile)
 
+    @external
+    def testDatasets_External(self):
+        """
+        Test the components of LHCbDataset which rely on external code
+        """
+        from Ganga.GPI import LHCbDataset
         LFN_DATA = ['LFN:/lhcb/LHCb/Collision11/DIMUON.DST/00016768/0000/00016768_00000005_1.dimuon.dst',
                     'LFN:/lhcb/LHCb/Collision11/DIMUON.DST/00016768/0000/00016768_00000006_1.dimuon.dst']
         ds = LHCbDataset(LFN_DATA)
