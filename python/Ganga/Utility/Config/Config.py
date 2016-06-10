@@ -177,8 +177,6 @@ def makeConfig(name, docstring, **kwds):
     """
 
     if _after_bootstrap:
-        #import traceback
-        #traceback.print_stack()
         raise ConfigError(
             'attempt to create a configuration section [%s] after bootstrap' % name)
 
@@ -189,12 +187,6 @@ def makeConfig(name, docstring, **kwds):
             setattr(c, k, kwds[k])
     except KeyError:
         c = allConfigs[name] = PackageConfig(name, docstring, **kwds)
-
-# _after_bootstrap flag solves chicken-egg problem between logging and config modules
-# if _after_bootstrap:
-# make the GPI proxy
-##          from Ganga.GPIDev.Lib.Config.Config import createSectionProxy
-# createSectionProxy(name)
 
     c._config_made = True
     return c
@@ -531,12 +523,6 @@ class PackageConfig(object):
                     ##uncomment for debugging
                     ##print("%s" % msg)
                     pass
-
-
-# set the GPI proxy object if already created, if not it will be created by bootstrap() function in the GPI Config module
-# if _after_bootstrap:
-##             from Ganga.GPIDev.Lib.Config.Config import createOptionProxy
-# createOptionProxy(self.name,name)
 
     def setSessionValue(self, name, value, raw=0):
         """  Add or  override options  as a  part of  second  phase of
