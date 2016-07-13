@@ -22,7 +22,7 @@ if not _after_bootstrap:
     # Set default values for the LHCb config section.
     dscrpt = 'The name of the local site to be used for resolving LFNs into PFNs.'
     configLHCb.addOption('LocalSite', '', dscrpt)
-
+    configLHCb.addOption('diracVersion','',"set LHCbDirac version")
     dscrpt = 'Files from these services will go to the output sandbox (unless \
     overridden by the user in a specific job via the Job.outputdata field). Files \
     from all other known handlers will go to output data (unless overridden by \
@@ -83,6 +83,12 @@ def _store_root_version():
 def _store_dirac_environment():
     from GangaDirac.Lib.Utilities.DiracUtilities import write_env_cache, get_env
     diracversion = _guess_version('LHCBDIRAC')
+    optionVersion = Ganga.Utility.Config.getConfig('LHCb')['diracVersion']
+    if os.path.isdir("/afs/cern.ch/lhcb/software/releases/LHCBDIRAC/LHCBDIRAC_"+optionVersion):
+      diracversion = optionVersion
+    elif optionVersion != '' :
+      logger.warning('LHCbDirac version %s  does not exist, using default version %s instead',optionVersion,diracversion)
+    logger.info("Using LHCbDirac version %s", diracversion)
     platform = os.environ['CMTOPT']
     fdir = os.path.join(os.path.expanduser("~/.cache/Ganga/GangaLHCb"), platform)
     fname = os.path.join(fdir, diracversion)
