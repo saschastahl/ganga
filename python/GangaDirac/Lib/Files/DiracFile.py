@@ -12,7 +12,9 @@ from Ganga.GPIDev.Adapters.IGangaFile import IGangaFile
 from Ganga.GPIDev.Lib.Job.Job import Job
 from Ganga.Core.exceptions import GangaException
 from Ganga.Utility.files import expandfilename
+from Ganga.GPIDev.Credentials2 import require_credential
 from GangaDirac.Lib.Utilities.DiracUtilities import getDiracEnv, execute
+from GangaDirac.Lib.Credentials.DiracProxy import DiracProxy
 from Ganga.Utility.Config import getConfig
 from Ganga.Utility.logging import getLogger
 config = getConfig('Configuration')
@@ -47,6 +49,7 @@ class DiracFile(IGangaFile):
                                                                typelist=['GangaDirac.Lib.Files.DiracFile'], doc="collected files from the wildcard namePattern"),
                                      'defaultSE': SimpleItem(defvalue='', copyable=1, doc="defaultSE where the file is to be accessed from or uploaded to"),
                                      'failureReason': SimpleItem(defvalue="", protected=1, copyable=0, doc='reason for the upload failure'),
+                                     'credential_requirements': ComponentItem('CredentialRequirement', defvalue=DiracProxy()),
     })
 
     _env = None
@@ -289,6 +292,7 @@ class DiracFile(IGangaFile):
         if self.lfn != '':
             self.remove()
 
+    @require_credential
     def remove(self):
         """
         Remove this lfn and all replicas from DIRAC LFC/SEs
@@ -296,7 +300,7 @@ class DiracFile(IGangaFile):
         if self.lfn == "":
             raise GangaException('Can\'t remove a  file from DIRAC SE without an LFN.')
         logger.info('Removing file %s' % self.lfn)
-        stdout = execute('removeFile("%s")' % self.lfn)
+        stdout = execute('removeFile("%s")' % self.lfn, cred_req=self.credential_requirements)
         if isinstance(stdout, dict) and stdout.get('OK', False) and self.lfn in stdout.get('Value', {'Successful': {}})['Successful']:
             self.lfn = ""
             self.locations = []
@@ -305,6 +309,7 @@ class DiracFile(IGangaFile):
         logger.error("Error in removing file '%s' : %s" % (self.lfn, stdout))
         return stdout
 
+    @require_credential
     def getMetadata(self):
         """
         Get Metadata associated with this files lfn. This method will also
@@ -315,7 +320,7 @@ class DiracFile(IGangaFile):
             self._optionallyUploadLocalFile()
 
         # eval again here as datatime not included in dirac_ganga_server
-        r = execute('getMetadata("%s")' % self.lfn)
+        r = execute('getMetadata("%s")' % self.lfn, cred_req=self.credential_requirements)
         try:
             ret = eval(r)
         except:
@@ -369,6 +374,7 @@ class DiracFile(IGangaFile):
 
         return
 
+    @require_credential
     def getReplicas(self, forceRefresh=False):
         """
         Get the list of all SE where this file has a replica
@@ -397,7 +403,7 @@ class DiracFile(IGangaFile):
                 self._storedReplicas = copy.deepcopy(self._storedReplicas)
             if (self._storedReplicas == {} and len(self.subfiles) == 0) or forceRefresh:
 
-                self._storedReplicas = execute('getReplicas("%s")' % self.lfn)
+                self._storedReplicas = execute('getReplicas("%s")' % self.lfn, cred_req=self.credential_requirements)
                 if self._storedReplicas.get('OK', False) is True:
                     try:
                         self._storedReplicas = self._storedReplicas['Value']['Successful']
@@ -460,6 +466,7 @@ class DiracFile(IGangaFile):
                     LFNs.append(this_url)
             return LFNs
 
+    @require_credential
     def accessURL(self, thisSE=''):
         """
         Attempt to find an accessURL which corresponds to an SE at this given site
@@ -480,9 +487,9 @@ class DiracFile(IGangaFile):
             for this_SE in files_URLs.keys():
 
                 this_URL = files_URLs.get(this_SE)
-                these_sites_output = execute('getSitesForSE("%s")' % str(this_SE))
+                these_sites_output = execute('getSitesForSE("%s")' % str(this_SE), cred_req=self.credential_requirements)
                 if thisSE == '':
-                    default_site = execute('getSiteForSE("%s")' % self.defaultSE)
+                    default_site = execute('getSiteForSE("%s")' % self.defaultSE, cred_req=self.credential_requirements)
                 else:
                     default_site = thisSE
 
@@ -521,6 +528,7 @@ class DiracFile(IGangaFile):
 
             return _accessURLs
 
+    @require_credential
     def get(self, localPath=''):
         """
         Retrieves locally the file matching this DiracFile object pattern.
@@ -548,7 +556,7 @@ class DiracFile(IGangaFile):
             raise GangaException('Can\'t download a file without an LFN.')
 
         logger.info("Getting file %s" % self.lfn)
-        stdout = execute('getFile("%s", destDir="%s")' % (self.lfn, to_location))
+        stdout = execute('getFile("%s", destDir="%s")' % (self.lfn, to_location), cred_req=self.credential_requirements)
         if isinstance(stdout, dict) and stdout.get('OK', False) and self.lfn in stdout.get('Value', {'Successful': {}})['Successful']:
             if self.namePattern == "":
                 name = os.path.basename(self.lfn)
@@ -562,6 +570,7 @@ class DiracFile(IGangaFile):
         logger.error("Error in getting file '%s' : %s" % (self.lfn, str(stdout)))
         return stdout
 
+    @require_credential
     def replicate(self, destSE, sourceSE=''):
         """
         Replicate an LFN to another SE
@@ -575,7 +584,7 @@ class DiracFile(IGangaFile):
             raise GangaException('Must supply an lfn to replicate')
 
         logger.info("Replicating file %s to %s" % (self.lfn, destSE))
-        stdout = execute('replicateFile("%s", "%s", "%s")' % (self.lfn, destSE, sourceSE))
+        stdout = execute('replicateFile("%s", "%s", "%s")' % (self.lfn, destSE, sourceSE), cred_req=self.credential_requirements)
         if isinstance(stdout, dict) and stdout.get('OK', False) and self.lfn in stdout.get('Value', {'Successful': {}})['Successful']:
             if destSE not in self.locations:
                 self.locations.append(destSE)
@@ -588,6 +597,7 @@ class DiracFile(IGangaFile):
             raise Exception(
                 "No wildcards in inputfiles for DiracFile just yet. Dirac are exposing this in API soon.")
 
+    @require_credential
     def put(self, lfn='', force=False, uploadSE="", replicate=False):
         """
         Try to upload file sequentially to storage elements defined in configDirac['allDiracSE'].
@@ -724,7 +734,7 @@ class DiracFile(IGangaFile):
             stderr = ''
             stdout = ''
             logger.info('Uploading file \'%s\' to \'%s\' as \'%s\'' % (name, storage_elements[0], lfn))
-            stdout = execute('uploadFile("%s", "%s", %s)' % (lfn, name, str([storage_elements[0]])))
+            stdout = execute('uploadFile("%s", "%s", %s)' % (lfn, name, str([storage_elements[0]])), cred_req=self.credential_requirements)
             if type(stdout) == str:
                 logger.warning("Couldn't upload file '%s': \'%s\'" % (os.path.basename(name), stdout))
                 continue
